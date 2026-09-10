@@ -34,26 +34,7 @@ function initFooterYear() {
   if (el) el.textContent = String(new Date().getFullYear());
 }
 
-function initGetStarted() {
-  // [RESEARCHER APPROVAL REQUIRED]
-  // The destination for "Get started" (participant information / sign-in
-  // page) is a future phase and has not been built or approved yet.
-  // This placeholder prevents a dead link/navigation error in the
-  // meantime rather than guessing at a route.
-  const primaryStart = document.getElementById("get-started-btn");
-  if (!primaryStart) return;
-
-  primaryStart.addEventListener("click", (event) => {
-    event.preventDefault();
-    // eslint-disable-next-line no-console
-    console.info(
-      "VERIFY-AI: participant flow is not built yet — this button will link to the participant information page once that phase is approved."
-    );
-  });
-}
-
 document.addEventListener("DOMContentLoaded", () => {
   initMobileNav();
   initFooterYear();
-  initGetStarted();
 });

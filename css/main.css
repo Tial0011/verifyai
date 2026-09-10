@@ -144,7 +144,7 @@ button:focus-visible,
 .wrap {
   max-width: var(--content-max);
   margin-inline: auto;
-  padding-inline: clamp(1.25rem, 4vw, 2.5rem);
+  padding-inline: clamp(1.1rem, 5vw, 2.5rem);
 }
 
 /* Buttons ------------------------------------------------------------- */
@@ -154,6 +154,7 @@ button:focus-visible,
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  min-height: 44px;
   border-radius: var(--radius-sm);
   padding: 0.85rem 1.6rem;
   font-size: var(--step-0);
@@ -195,10 +196,179 @@ button:focus-visible,
 /* Section rhythm -------------------------------------------------------- */
 
 .section {
-  padding-block: clamp(3rem, 6vw, 5.5rem);
+  padding-block: clamp(2.5rem, 8vw, 5.5rem);
   border-top: 1px solid var(--color-line);
 }
 
 .eyebrow-none {
   /* intentionally no tracked-out eyebrow labels in this design */
+}
+
+/* Site header — shared across every page ------------------------------- */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(245, 246, 244, 0.92);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 1rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  color: var(--color-ink);
+}
+
+.brand__mark {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  background: var(--color-ink);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.brand__name {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 2vw, 2rem);
+}
+
+.site-nav__links {
+  display: flex;
+  gap: clamp(1rem, 2vw, 1.75rem);
+  list-style: none;
+}
+
+.site-nav__links a {
+  text-decoration: none;
+  color: var(--color-ink-soft);
+  font-size: 0.95rem;
+  padding-block: 0.25rem;
+  border-bottom: 1px solid transparent;
+}
+
+.site-nav__links a:hover {
+  color: var(--color-ink);
+  border-bottom-color: var(--color-ink);
+}
+
+.nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  background: none;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.9rem;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 720px) {
+  .site-header__inner {
+    padding-block: 0.75rem;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+  }
+
+  .site-nav__links {
+    position: absolute;
+    inset-inline: 0;
+    top: 100%;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-line);
+    box-shadow: 0 8px 16px rgba(18, 33, 63, 0.06);
+    flex-direction: column;
+    gap: 0;
+    padding: 0.25rem clamp(1.25rem, 4vw, 2.5rem) 0.75rem;
+    display: none;
+  }
+
+  .site-nav__links a {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    padding-block: 0.6rem;
+    font-size: 1rem;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .site-nav[data-open="true"] .site-nav__links {
+    display: flex;
+  }
+
+  .site-nav__cta {
+    display: none;
+  }
+}
+
+/* Researcher-approval placeholder pill — used inline wherever content is
+   pending confirmation from the research team. ------------------------- */
+
+.placeholder {
+  display: inline-block;
+  color: var(--color-accent);
+  background: var(--color-accent-ink);
+  border: 1px solid #cddacf;
+  border-radius: var(--radius-sm);
+  padding: 0.1rem 0.5rem;
+  font-size: 0.85em;
+}
+
+/* Site footer — shared across every page -------------------------------- */
+
+.site-footer {
+  border-top: 1px solid var(--color-line);
+  padding-block: 2rem;
+}
+
+.site-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.5rem;
+  justify-content: space-between;
+  align-items: baseline;
+  color: var(--color-ink-faint);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 480px) {
+  .site-footer__inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+.site-footer a {
+  color: var(--color-ink-soft);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }

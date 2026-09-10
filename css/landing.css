@@ -1,142 +1,18 @@
 /* ==========================================================================
    VERIFY-AI — Landing Page
+   Header, footer, and the .placeholder tag are shared across pages and
+   live in css/main.css. This file only covers landing-page-specific
+   sections: hero, about/steps/info section headings, and the CTA band.
    ========================================================================== */
-
-/* Header ----------------------------------------------------------------- */
-
-.site-header {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  background: rgba(245, 246, 244, 0.92);
-  backdrop-filter: blur(6px);
-  border-bottom: 1px solid var(--color-line);
-}
-
-.site-header__inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-block: 1rem;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  text-decoration: none;
-  color: var(--color-ink);
-}
-
-.brand__mark {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius-sm);
-  background: var(--color-ink);
-  color: #fff;
-  display: grid;
-  place-items: center;
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.brand__name {
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
-.site-nav {
-  display: flex;
-  align-items: center;
-  gap: clamp(1rem, 2vw, 2rem);
-}
-
-.site-nav__links {
-  display: flex;
-  gap: clamp(1rem, 2vw, 1.75rem);
-  list-style: none;
-}
-
-.site-nav__links a {
-  text-decoration: none;
-  color: var(--color-ink-soft);
-  font-size: 0.95rem;
-  padding-block: 0.25rem;
-  border-bottom: 1px solid transparent;
-}
-
-.site-nav__links a:hover {
-  color: var(--color-ink);
-  border-bottom-color: var(--color-ink);
-}
-
-.nav-toggle {
-  display: none;
-  background: none;
-  border: 1px solid var(--color-line-strong);
-  border-radius: var(--radius-sm);
-  padding: 0.5rem 0.7rem;
-}
-
-@media (max-width: 720px) {
-  .nav-toggle {
-    display: inline-flex;
-  }
-
-  .site-nav__links {
-    position: absolute;
-    inset-inline: 0;
-    top: 100%;
-    background: var(--color-surface);
-    border-bottom: 1px solid var(--color-line);
-    flex-direction: column;
-    gap: 0;
-    padding: 0.5rem clamp(1.25rem, 4vw, 2.5rem);
-    display: none;
-  }
-
-  .site-nav__links a {
-    display: block;
-    padding-block: 0.85rem;
-    border-bottom: 1px solid var(--color-line);
-  }
-
-  .site-nav[data-open="true"] .site-nav__links {
-    display: flex;
-  }
-
-  .site-nav__cta {
-    display: none;
-  }
-}
 
 /* Hero --------------------------------------------------------------------*/
 
 .hero {
-  padding-block: clamp(3rem, 7vw, 6rem);
+  padding-block: clamp(2.5rem, 9vw, 6rem);
 }
 
-.hero__grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.75fr);
-  gap: clamp(2rem, 5vw, 4rem);
-  align-items: center;
-}
-
-@media (max-width: 860px) {
-  .hero__grid {
-    grid-template-columns: 1fr;
-  }
-
-  .hero__figure {
-    order: -1;
-    max-width: 22rem;
-    margin-inline: auto;
-  }
+.hero__inner {
+  max-width: 42rem;
 }
 
 .hero__title {
@@ -145,14 +21,14 @@
 }
 
 .hero__lede {
-  margin-top: 1.25rem;
+  margin-top: 1.1rem;
   max-width: var(--measure);
   color: var(--color-ink-soft);
   font-size: var(--step-1);
 }
 
 .hero__actions {
-  margin-top: 2rem;
+  margin-top: 1.75rem;
   display: flex;
   align-items: center;
   gap: 1.25rem;
@@ -164,9 +40,20 @@
   font-size: 0.9rem;
 }
 
-.hero__figure svg {
-  width: 100%;
-  height: auto;
+@media (max-width: 480px) {
+  .hero__actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.9rem;
+  }
+
+  .hero__actions .btn {
+    width: 100%;
+  }
+
+  .hero__note {
+    text-align: center;
+  }
 }
 
 /* Section heading pattern ---------------------------------------------- */
@@ -207,16 +94,30 @@
 
 .step {
   display: grid;
-  grid-template-columns: 3.5rem 1fr;
-  gap: 1rem;
-  padding-block: 1.4rem;
+  grid-template-columns: 2.75rem 1fr;
+  gap: 0.85rem;
+  padding-block: 1.25rem;
   border-bottom: 1px solid var(--color-line);
+}
+
+@media (min-width: 480px) {
+  .step {
+    grid-template-columns: 3.5rem 1fr;
+    gap: 1rem;
+    padding-block: 1.4rem;
+  }
 }
 
 .step__index {
   font-family: var(--font-display);
-  font-size: 1.35rem;
+  font-size: 1.2rem;
   color: var(--color-ink-faint);
+}
+
+@media (min-width: 480px) {
+  .step__index {
+    font-size: 1.35rem;
+  }
 }
 
 .step__title {
@@ -270,16 +171,6 @@
   color: var(--color-ink-soft);
 }
 
-.placeholder {
-  display: inline-block;
-  color: var(--color-accent);
-  background: var(--color-accent-ink);
-  border: 1px solid #cddacf;
-  border-radius: var(--radius-sm);
-  padding: 0.1rem 0.5rem;
-  font-size: 0.85em;
-}
-
 /* Final CTA band ---------------------------------------------------------*/
 
 .cta-band {
@@ -309,25 +200,9 @@
   margin-top: 1.75rem;
 }
 
-/* Footer ------------------------------------------------------------------*/
-
-.site-footer {
-  border-top: 1px solid var(--color-line);
-  padding-block: 2rem;
-}
-
-.site-footer__inner {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem 1.5rem;
-  justify-content: space-between;
-  align-items: baseline;
-  color: var(--color-ink-faint);
-  font-size: 0.9rem;
-}
-
-.site-footer a {
-  color: var(--color-ink-soft);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+@media (max-width: 480px) {
+  .cta-band__inner .btn {
+    width: 100%;
+    max-width: 20rem;
+  }
 }
