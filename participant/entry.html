@@ -45,7 +45,6 @@
             <div class="field" id="institution-field" data-invalid="false">
               <div class="field__label-row">
                 <label class="field__label" for="institution">Institution / university</label>
-                <span class="field__tag field__tag--required">Required</span>
               </div>
               <select class="field__control" id="institution" name="institution" autocomplete="organization" required aria-describedby="institution-error">
                 <option value="">Select an option</option>
@@ -59,7 +58,6 @@
             <div class="field" id="clinical-year-field" data-invalid="false">
               <div class="field__label-row">
                 <label class="field__label" for="clinical-year">Clinical year</label>
-                <span class="field__tag field__tag--required">Required</span>
               </div>
               <select class="field__control" id="clinical-year" name="clinical-year" required aria-describedby="clinical-year-error">
                 <option value="">Select an option</option>
@@ -73,30 +71,20 @@
             <div class="field" id="age-field" data-invalid="false">
               <div class="field__label-row">
                 <label class="field__label" for="age">Age</label>
-                <span class="field__tag field__tag--required">Required</span>
               </div>
               <input class="field__control field__control--narrow" type="number" id="age" name="age" min="0" max="120" inputmode="numeric" required aria-describedby="age-error" />
               <p class="field__error" id="age-error">Please enter a valid age between 0 and 120.</p>
             </div>
 
             <fieldset class="field choice-fieldset" id="sex-field" data-invalid="false">
-              <legend>Sex <span class="field__tag field__tag--required">Required</span></legend>
-              <div class="choice-options" role="radiogroup" aria-label="Sex" aria-describedby="sex-error">
-                <label class="choice-option"><input type="radio" name="sex" value="female" required /> Female</label>
-                <label class="choice-option"><input type="radio" name="sex" value="male" required /> Male</label>
-                <label class="choice-option"><input type="radio" name="sex" value="prefer-not-to-say" required /> Prefer not to say</label>
+              <legend>Sex</legend>
+              <div class="choice-options choice-options--compact" role="radiogroup" aria-label="Sex" aria-describedby="sex-error">
+                <label class="choice-option choice-option--compact"><input type="radio" name="sex" value="female" required /> Female</label>
+                <label class="choice-option choice-option--compact"><input type="radio" name="sex" value="male" required /> Male</label>
+                <label class="choice-option choice-option--compact"><input type="radio" name="sex" value="prefer-not-to-say" required /> Prefer not to say</label>
               </div>
               <p class="field__error" id="sex-error">Please select an option.</p>
             </fieldset>
-
-            <div class="field" id="participant-code-field" data-invalid="false">
-              <div class="field__label-row">
-                <label class="field__label" for="participant-code">Participant ID / study code</label>
-                <span class="field__tag field__tag--required">Required</span>
-              </div>
-              <input class="field__control" type="text" id="participant-code" name="participant-code" autocomplete="off" required aria-describedby="participant-code-error" />
-              <p class="field__error" id="participant-code-error">Please enter your participant ID / study code.</p>
-            </div>
 
           </div>
         </section>

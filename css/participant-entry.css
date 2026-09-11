@@ -217,6 +217,24 @@ textarea.field__control {
   flex-shrink: 0;
 }
 
+.choice-options--compact {
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+}
+
+.choice-option--compact {
+  min-height: 36px;
+  padding: 0.3rem 0.6rem 0.3rem 0.45rem;
+  font-size: 0.88rem;
+  white-space: nowrap;
+  flex: 0 1 auto;
+}
+
+.choice-option--compact input {
+  width: 15px;
+  height: 15px;
+}
+
 /* Consent section ----------------------------------------------------------*/
 
 .consent-block {

@@ -31,7 +31,6 @@ const FIELD_DEFS = [
   { wrapperId: "clinical-year-field", kind: "text", controlId: "clinical-year" },
   { wrapperId: "age-field", kind: "number", controlId: "age", min: 0, max: 120 },
   { wrapperId: "sex-field", kind: "radio", name: "sex" },
-  { wrapperId: "participant-code-field", kind: "text", controlId: "participant-code" },
   { wrapperId: "ai-exposure-field", kind: "radio", name: "ai-exposure" },
   { wrapperId: "ai-frequency-field", kind: "text", controlId: "ai-frequency" },
   { wrapperId: "ai-clinical-use-field", kind: "radio", name: "ai-clinical-use" },
