@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clinical Case — VERIFY-AI</title>
+  <meta name="description" content="VERIFY-AI clinical decision-making study — case activity." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/participant-ui-no-ai.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header entry-header">
+    <div class="wrap site-header__inner">
+      <a class="brand" href="../index.html">
+        <span class="brand__mark" aria-hidden="true">V</span>
+        <span class="brand__name">VERIFY-AI</span>
+      </a>
+    </div>
+  </header>
+
+  <main id="main" class="study-main">
+    <div class="wrap">
+
+      <!-- Participant status — non-sensitive only. Deliberately does not
+           show the study arm/condition; see docs/RESEARCHER-REVIEW-UI-NO-AI.md. -->
+      <section class="participant-status" aria-label="Study status">
+        <div class="participant-status__item">
+          <span class="participant-status__label">Participant ID</span>
+          <span class="participant-status__value" id="participant-id-value">—</span>
+        </div>
+        <div class="participant-status__item">
+          <span class="participant-status__label">Study</span>
+          <span class="participant-status__value" id="study-name-value">—</span>
+        </div>
+      </section>
+
+      <!-- Progress -->
+      <section class="study-progress" aria-label="Progress">
+        <p class="study-progress__label" id="progress-label">Case — of —</p>
+        <div class="study-progress__bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress-bar">
+          <div class="study-progress__fill" id="progress-fill"></div>
+        </div>
+      </section>
+
+      <!-- First case template. No AI panel exists anywhere on this page —
+           the No-AI condition must remain genuinely AI-free. -->
+      <section class="case-card" aria-labelledby="case-heading">
+        <p class="case-card__eyebrow">Clinical case</p>
+        <h1 id="case-heading">Case <span id="case-number-inline">1</span></h1>
+
+        <div class="case-card__vignette">
+          <p class="placeholder">PLACEHOLDER — RESEARCHER CONTENT REQUIRED</p>
+          <p>
+            The clinical vignette for this case will be inserted here once
+            approved by the research team. This placeholder exists only to
+            demonstrate the page layout and is not finalized study material.
+          </p>
+        </div>
+
+        <form id="case-form" novalidate>
+
+          <div class="field" id="diagnosis-field">
+            <div class="field__label-row">
+              <label class="field__label" for="initial-diagnosis">Your initial diagnosis</label>
+              <span class="field__tag field__tag--optional">Format pending research approval</span>
+            </div>
+            <input class="field__control" type="text" id="initial-diagnosis" name="initial-diagnosis" placeholder="Enter your diagnosis" autocomplete="off" />
+          </div>
+
+          <fieldset class="field choice-fieldset" id="confidence-field">
+            <legend>Confidence in your diagnosis</legend>
+            <p class="field__hint"><span class="placeholder">PLACEHOLDER SCALE — RESEARCHER APPROVAL REQUIRED</span></p>
+            <div class="choice-options" role="radiogroup" aria-label="Confidence, 1 low to 5 high">
+              <label class="choice-option"><input type="radio" name="confidence" value="1" /> 1</label>
+              <label class="choice-option"><input type="radio" name="confidence" value="2" /> 2</label>
+              <label class="choice-option"><input type="radio" name="confidence" value="3" /> 3</label>
+              <label class="choice-option"><input type="radio" name="confidence" value="4" /> 4</label>
+              <label class="choice-option"><input type="radio" name="confidence" value="5" /> 5</label>
+            </div>
+          </fieldset>
+
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit" id="case-continue-btn">Continue</button>
+            <p class="form-status" id="case-status" role="status" aria-live="polite">
+              This case template is for interface review. Response saving is not yet enabled.
+            </p>
+          </div>
+
+        </form>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap site-footer__inner">
+      <p>&copy; <span id="footer-year">2026</span> VERIFY-AI.</p>
+      <p>Questions? <a href="tel:+2349066291084">Contact Ebine Favour O.</a></p>
+    </div>
+  </footer>
+
+  <script type="module" src="../js/participant/ui-no-ai.js"></script>
+</body>
+</html>

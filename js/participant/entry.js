@@ -1,16 +1,15 @@
 /**
  * VERIFY-AI — Participant entry / information / consent form.
  *
- * Scope note: this file only handles client-side form UX (validation,
- * inline error messages, enabling the Continue button). It does not read
- * or write Firestore, and does not persist participant data anywhere yet.
- *
- * Whether a participant record should be created at this stage, and
- * where the form's data should be stored, is an open question for the
- * research team — see the developer notes shared alongside this page.
- * Until that's decided, submitting this form does not send data
- * anywhere; it only unlocks navigation once all required fields pass
- * validation.
+ * Per the approved "local storage + single Firestore write" architecture:
+ * this page never talks to Firestore. On Continue, once all required
+ * fields validate, the form's data is saved as a local draft snapshot
+ * (see js/utils/local-storage.js) so it survives refreshes/navigation
+ * during the session, and the participant is sent on to the case flow
+ * (cases.html) if their institution's arm has been built. The
+ * participant record itself is written to Firestore exactly once, later,
+ * at final study submission (complete.html) — see "Not yet built" below
+ * for what's still missing from that path.
  *
  * ---------------------------------------------------------------------
  * FIELD_DEFS is the single place that controls which fields are
@@ -25,7 +24,14 @@
  * To add or remove a required field later, edit this array; no other
  * code needs to change.
  * ---------------------------------------------------------------------
+ *
+ * Not yet built (blocked on research-team approval, not on this file):
+ * the case content is placeholder-only (see js/participant/case-data.js),
+ * and the Standard-AI / AI+VERIFY-AI arms for other institutions don't
+ * exist yet — only University of Ibadan (No-AI) navigates past this page.
  */
+import { saveParticipantDraft } from "../utils/local-storage.js";
+
 const FIELD_DEFS = [
   { wrapperId: "institution-field", kind: "text", controlId: "institution" },
   { wrapperId: "clinical-year-field", kind: "text", controlId: "clinical-year" },
@@ -80,6 +86,44 @@ function isFieldSatisfied(def) {
 
 function allRequiredFieldsSatisfied() {
   return FIELD_DEFS.every(isFieldSatisfied);
+}
+
+/** Reads a single control's current value, regardless of its kind. */
+function readControlValue(def) {
+  const controls = getControls(def);
+  if (controls.length === 0) return null;
+  if (def.kind === "checkbox") return controls[0].checked;
+  if (def.kind === "radio") {
+    const checked = controls.find((input) => input.checked);
+    return checked ? checked.value : null;
+  }
+  if (def.kind === "number") {
+    const raw = controls[0].value.trim();
+    return raw.length ? Number(raw) : null;
+  }
+  return controls[0].value.trim();
+}
+
+/**
+ * Builds the participant draft object from the current form state: every
+ * field in FIELD_DEFS (keyed by controlId or radio-group name), plus any
+ * approved optional fields collected alongside them. This is the object
+ * that gets saved to localStorage — nothing here is sent to Firestore.
+ */
+function collectParticipantData() {
+  const data = {};
+  FIELD_DEFS.forEach((def) => {
+    const key = def.controlId || def.name;
+    data[key] = readControlValue(def);
+  });
+
+  // Optional fields not in FIELD_DEFS (not required, but worth capturing
+  // if the participant filled them in).
+  const aiTools = getField("ai-tools");
+  if (aiTools) data["ai-tools"] = aiTools.value.trim();
+
+  data.savedAt = new Date().toISOString();
+  return data;
 }
 
 /** Applies (or clears) the invalid state on a single field's wrapper + controls. */
@@ -164,19 +208,29 @@ function initFormSubmit() {
       return;
     }
 
-    // The next stage of the participant journey (randomization / clinical
-    // cases) has not been built or approved yet, and it isn't yet decided
-    // whether/when participant data should be written to Firebase. So
-    // rather than guessing at either, this shows a clear in-page note
-    // instead of navigating or writing anything.
+    // Save the participant's information + consent locally. Nothing is
+    // written to Firestore here or anywhere before final study submission.
+    const participantData = collectParticipantData();
+    saveParticipantDraft(participantData);
+
+    if (participantData.institution === "university-of-ibadan") {
+      // Only the No-AI arm (University of Ibadan) is built so far.
+      window.location.href = "cases.html";
+      return;
+    }
+
+    // Standard-AI / AI+VERIFY-AI arms (other institutions) aren't built
+    // yet — show a clear in-page note instead of navigating anywhere.
+    // The local draft is already saved and will be picked up once those
+    // flows exist.
     if (status) {
       status.textContent =
-        "Thanks — this information has been captured for review. The next stage of the study is not yet available; it will continue once the research team has approved the remaining study steps.";
+        "Thanks — your information has been saved for this session. The next stage of the study for your institution is not yet available.";
       status.setAttribute("data-state", "pending");
     }
 
     // eslint-disable-next-line no-console
-    console.info("VERIFY-AI: participant form submitted (not persisted — next stage pending approval).");
+    console.info("VERIFY-AI: participant draft saved locally (no Firestore write).");
   });
 }
 

@@ -1,0 +1,59 @@
+/* ==========================================================================
+   VERIFY-AI — Case runner & final submission
+   Builds on tokens/resets/.field/.btn/.form-actions/.form-status from
+   main.css and participant-entry.css. This file only covers what's
+   specific to cases.html and complete.html.
+   ========================================================================== */
+
+.wrap--narrow {
+  max-width: 42rem;
+}
+
+/* Case runner ---------------------------------------------------------- */
+
+.case-progress {
+  color: var(--color-ink-faint);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.case-title {
+  margin-top: 0.4rem;
+  font-size: var(--step-2);
+}
+
+.case-vignette {
+  margin-top: 1.25rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-md);
+  line-height: 1.6;
+}
+
+.case-vignette.placeholder {
+  border: 1px dashed var(--color-line-strong);
+  color: var(--color-ink-soft);
+  font-style: italic;
+}
+
+#case-form {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.case-blocked {
+  padding: 1rem 1.1rem;
+  border-left: 3px solid var(--color-accent);
+  background: var(--color-accent-ink);
+  color: var(--color-ink-soft);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+/* Final submission ------------------------------------------------------- */
+
+.participant-id {
+  margin-top: 0.5rem;
+  font-size: var(--step-3);
+  letter-spacing: 0.02em;
+}

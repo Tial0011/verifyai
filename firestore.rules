@@ -1,0 +1,98 @@
+rules_version = '2';
+
+// VERIFY-AI — Firestore Security Rules (template)
+//
+// ⚠️ This is a starting point, not a reviewed/deployed rule set. The
+// chosen submission architecture (js/firebase/submission.js) is a
+// client-side transaction with NO trusted backend — which means these
+// rules ARE the entire security boundary for the final write. Before
+// relying on this in a real study, it should be reviewed by whoever owns
+// the Firebase project, and exercised against the Firestore emulator
+// (create, duplicate-create, wrong-shape write, counter tampering, etc.)
+// — not just read once and trusted.
+//
+// What these rules are trying to guarantee, matching the architecture
+// notes (README "Security Principles" + item 17 of the update):
+//   - A participant document can be CREATED once, by anyone (no login),
+//     but never read, updated, or deleted by the public client.
+//   - The counter can only move from N to exactly N+1, never set
+//     arbitrarily, never decreased, never read by the public client
+//     outside of the transaction that also writes it.
+//   - A submission lock document can be created once (and only once) per
+//     idempotency key, is otherwise immutable, and isn't publicly
+//     readable/listable.
+//   - Nothing else is reachable by the public client at all.
+//   - Researcher-only access (dashboards/exports) is intentionally NOT
+//     defined here yet — it needs an actual researcher auth/claims design
+//     before rules can safely grant read access to participant data.
+
+function isParticipantShapeValid(data) {
+  return data.keys().hasAll(['participantId', 'university', 'studyCondition', 'consent', 'createdAt'])
+    && data.participantId is string
+    && data.participantId.matches('^VA[0-9]{3}$')
+    && data.participantId == request.resource.id
+    && data.studyCondition == 'no_ai'
+    && data.consent == true
+    && data.createdAt == request.time;
+}
+
+function isCounterStepValid() {
+  let before = resource.data.count;
+  let after = request.resource.data.count;
+  return after == before + 1;
+}
+
+function isFirstCounterWriteValid() {
+  return request.resource.data.count == 1;
+}
+
+function isLockShapeValid(data) {
+  return data.keys().hasAll(['participantId', 'createdAt'])
+    && data.participantId is string
+    && data.participantId.matches('^VA[0-9]{3}$')
+    && data.createdAt == request.time;
+}
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Sequential-ID counter. Only touchable as part of the same
+    // transaction that also creates the lock + participant docs (rules
+    // can't directly see "was this in the same transaction", so this
+    // relies on the app only ever writing the counter via
+    // submitFinalRecord's transaction — see the note above about this
+    // being a client-trusted design).
+    match /meta/participantCounter {
+      allow get: if true;
+      allow create: if isFirstCounterWriteValid();
+      allow update: if isCounterStepValid();
+      allow delete: if false;
+    }
+
+    // One lock document per idempotency key. Create-once, then
+    // effectively frozen; not listable/readable by the public client
+    // (the app never needs to read someone else's lock — only its own,
+    // by a key it already holds, which `get` allows).
+    match /submissionLocks/{idempotencyKey} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if isLockShapeValid(request.resource.data);
+      allow update, delete: if false;
+    }
+
+    // One participant record per generated ID. Create-once; never
+    // readable, updatable, or listable by the public client. (A future
+    // researcher-access design should add scoped read rules here, gated
+    // on real auth — not opened up as part of this change.)
+    match /participants/{participantId} {
+      allow get, list: if false;
+      allow create: if isParticipantShapeValid(request.resource.data);
+      allow update, delete: if false;
+    }
+
+    // Deny everything else by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,111 @@
+/* ==========================================================================
+   VERIFY-AI — University of Ibadan (No-AI) Study Page
+   Shares tokens, resets, header/footer, .btn / .placeholder / .field /
+   .choice-* / .form-actions / .form-status styles with css/main.css and
+   css/participant-entry.css. This file only covers what's specific here:
+   the participant status bar, progress indicator, and case card.
+   ========================================================================== */
+
+.study-main {
+  padding-block: clamp(2rem, 6vw, 3.5rem);
+}
+
+/* Participant status bar ------------------------------------------------- */
+
+.participant-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2.5rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: clamp(1.5rem, 4vw, 2rem);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+}
+
+.participant-status__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.participant-status__label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-ink-faint);
+}
+
+.participant-status__value {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  color: var(--color-ink);
+}
+
+/* Progress ----------------------------------------------------------------*/
+
+.study-progress {
+  max-width: 42rem;
+  margin-bottom: clamp(2rem, 5vw, 2.75rem);
+}
+
+.study-progress__label {
+  font-size: 0.9rem;
+  color: var(--color-ink-soft);
+  margin-bottom: 0.5rem;
+}
+
+.study-progress__bar {
+  height: 8px;
+  background: var(--color-line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.study-progress__fill {
+  height: 100%;
+  width: 0%;
+  background: var(--color-accent);
+  border-radius: 999px;
+  transition: width 0.2s ease;
+}
+
+/* Case card ---------------------------------------------------------------*/
+
+.case-card {
+  max-width: 42rem;
+}
+
+.case-card__eyebrow {
+  color: var(--color-ink-faint);
+  font-size: 0.9rem;
+}
+
+.case-card h1 {
+  margin-top: 0.5rem;
+  font-size: var(--step-3);
+}
+
+.case-card__vignette {
+  margin-top: clamp(1.5rem, 4vw, 2rem);
+  padding: 1.25rem;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.case-card__vignette p:last-child {
+  color: var(--color-ink-soft);
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.case-card form {
+  margin-top: clamp(2rem, 5vw, 2.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}

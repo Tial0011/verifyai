@@ -43,14 +43,25 @@ change without a redesign. Please confirm:
 10. **Study duration / instructions** specific to this stage — not yet
     included.
 
-11. **What should happen after clicking Continue.** No destination exists
-    yet (randomization and clinical cases are future phases). The button
-    currently validates the form and shows an in-page message rather than
-    navigating anywhere. This also needs a decision on:
-    - Whether a participant record should be created in Firebase at this
-      stage, or only later.
-    - What data (if any) needs to persist between this page and the next,
-      and where it should live in the meantime (session state vs. Firestore).
+11. **What should happen after clicking Continue — RESOLVED.** Per the
+    approved local-storage architecture: on Continue, the validated form
+    data is saved locally (`verifyAI_participant_draft` in `localStorage`,
+    via `js/utils/local-storage.js`) and nothing is written to Firebase.
+    The participant record is written to Firestore exactly once, at final
+    study submission. The destination page after Continue (the No-AI case
+    flow) still doesn't exist — see "Still open" below.
+
+## Still open, blocking the rest of the No-AI flow
+
+- Approved clinical case content (cases, required response fields,
+  timestamps to capture) — needed before the case pages can be built.
+- The final-submission page/flow, concurrency-safe participant-ID
+  generation (Firestore transaction or Cloud Function), and the
+  corresponding Firestore security rules.
+- Whether ID generation + the final write are done directly from the
+  client against a locked-down transaction, or via a trusted backend/Cloud
+  Function — the architecture notes ask for this to be made explicit
+  before implementation rather than assumed.
 
 ## What was deliberately not built
 

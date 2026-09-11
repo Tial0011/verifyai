@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submit Your Responses — VERIFY-AI</title>
+  <meta name="description" content="Submit your completed study responses for VERIFY-AI." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/participant-entry.css" />
+  <link rel="stylesheet" href="../css/participant-study.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header entry-header">
+    <div class="wrap site-header__inner">
+      <a class="brand" href="../index.html">
+        <span class="brand__mark" aria-hidden="true">V</span>
+        <span class="brand__name">VERIFY-AI</span>
+      </a>
+    </div>
+  </header>
+
+  <main id="main" class="entry-main">
+    <div class="wrap wrap--narrow">
+
+      <!-- Review / submit state -->
+      <div id="submit-state">
+        <div class="entry-intro">
+          <p class="entry-intro__eyebrow">Final step</p>
+          <h1>Submit your responses</h1>
+          <p>
+            You've completed all cases for this session. Submitting will
+            record your complete set of responses for this study — this
+            can only be done once.
+          </p>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" type="button" id="submit-btn">Submit</button>
+          <p class="form-status" id="submit-status" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <!-- Success state (hidden until shown by complete.js) -->
+      <div id="success-state" hidden>
+        <div class="entry-intro">
+          <p class="entry-intro__eyebrow">Submission successful</p>
+          <h1 id="participant-id-display" class="participant-id"></h1>
+          <p>
+            Thank you for submitting your responses. Your participant ID is
+            shown above — please make a note of it if requested by the
+            research team.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap site-footer__inner">
+      <p>&copy; <span id="footer-year">2026</span> VERIFY-AI.</p>
+      <p>Questions? <a href="tel:+2349066291084">Contact Ebine Favour O.</a></p>
+    </div>
+  </footer>
+
+  <script type="module" src="../js/participant/complete.js"></script>
+</body>
+</html>
