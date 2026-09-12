@@ -22,13 +22,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/fireba
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCfVz-VumbL9al4mHBkx1dS0pjVnJpC_5w",
-  authDomain: "verifyai-38ef0.firebaseapp.com",
-  projectId: "verifyai-38ef0",
-  storageBucket: "verifyai-38ef0.firebasestorage.app",
-  messagingSenderId: "872409124590",
-  appId: "1:872409124590:web:4b45ca11169fb940d46dff",
-  measurementId: "G-9QCJF1Z5R4",
+  apiKey: "REPLACE_WITH_FIREBASE_API_KEY",
+  authDomain: "REPLACE_WITH_PROJECT.firebaseapp.com",
+  projectId: "REPLACE_WITH_PROJECT_ID",
+  storageBucket: "REPLACE_WITH_PROJECT.appspot.com",
+  messagingSenderId: "REPLACE_WITH_SENDER_ID",
+  appId: "REPLACE_WITH_APP_ID",
 };
 
 const app = initializeApp(firebaseConfig);

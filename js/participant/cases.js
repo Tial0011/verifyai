@@ -54,13 +54,18 @@ function renderCase(progress) {
     <div class="case-vignette placeholder">${currentCase.vignette}</div>
 
     <form id="case-form" novalidate>
-      <div class="field" id="diagnosis-field" data-invalid="false">
-        <div class="field__label-row">
-          <label class="field__label" for="diagnosis-input">${currentCase.diagnosisPrompt}</label>
+      <fieldset class="field choice-fieldset" id="diagnosis-field" data-invalid="false">
+        <legend>${currentCase.diagnosisPrompt}</legend>
+        <div class="choice-options choice-options--stacked" role="radiogroup" aria-label="${currentCase.diagnosisPrompt}" aria-describedby="diagnosis-error">
+          ${currentCase.diagnosisOptions
+            .map(
+              (opt) =>
+                `<label class="choice-option"><input type="radio" name="diagnosis" value="${opt.id}" required /> ${opt.label}</label>`
+            )
+            .join("")}
         </div>
-        <textarea class="field__control" id="diagnosis-input" required aria-describedby="diagnosis-error"></textarea>
-        <p class="field__error" id="diagnosis-error">Please enter your diagnosis before continuing.</p>
-      </div>
+        <p class="field__error" id="diagnosis-error">Please select a diagnosis before continuing.</p>
+      </fieldset>
 
       <fieldset class="field choice-fieldset" id="confidence-field" data-invalid="false">
         <legend>${currentCase.confidencePrompt}</legend>
@@ -91,15 +96,14 @@ function renderCase(progress) {
 }
 
 function handleCaseSubmit(progress, index) {
-  const diagnosisInput = document.getElementById("diagnosis-input");
   const diagnosisField = document.getElementById("diagnosis-field");
   const confidenceField = document.getElementById("confidence-field");
   const status = document.getElementById("case-status");
 
-  const diagnosis = diagnosisInput.value.trim();
+  const diagnosisInput = document.querySelector('input[name="diagnosis"]:checked');
   const confidenceInput = document.querySelector('input[name="confidence"]:checked');
 
-  const diagnosisValid = diagnosis.length > 0;
+  const diagnosisValid = Boolean(diagnosisInput);
   const confidenceValid = Boolean(confidenceInput);
 
   diagnosisField.setAttribute("data-invalid", String(!diagnosisValid));
@@ -110,9 +114,13 @@ function handleCaseSubmit(progress, index) {
     return;
   }
 
+  const currentCase = CASES[index];
+  const selectedOption = currentCase.diagnosisOptions.find((opt) => opt.id === diagnosisInput.value);
+
   progress.responses[index] = {
     ...progress.responses[index],
-    diagnosis,
+    diagnosisOptionId: diagnosisInput.value,
+    diagnosisLabel: selectedOption ? selectedOption.label : null,
     confidence: Number(confidenceInput.value),
     submittedAt: new Date().toISOString(),
   };

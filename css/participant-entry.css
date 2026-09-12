@@ -235,6 +235,16 @@ textarea.field__control {
   height: 15px;
 }
 
+.choice-options--stacked {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+}
+
+.choice-options--stacked .choice-option {
+  width: 100%;
+}
+
 /* Consent section ----------------------------------------------------------*/
 
 .consent-block {

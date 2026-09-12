@@ -11,21 +11,24 @@ Firestore write" architecture. Please confirm:
    long as each case keeps the shape `{ id, title, vignette,
    diagnosisPrompt, confidencePrompt }`.
 
-2. **Diagnosis field is free text; confidence is a 1–5 scale.** Confirm
-   this matches the approved instrument — e.g. whether diagnosis should
-   instead be a structured/select list, and whether 1–5 is the right
-   confidence scale (the entry-page AI-literacy/trust questions already
-   use 1–5, so this matches that precedent, but hasn't been separately
-   confirmed for case-level confidence).
+2. **Diagnosis is now multiple-choice (MCQ); confidence is a 1–5 scale.**
+   Each case in `case-data.js` has a `diagnosisOptions` array (id + label
+   per option) rendered as radio buttons — replace the placeholder
+   options with the approved answer set (typically the correct diagnosis
+   plus distractors) per case. Confirm the 1–5 confidence scale is
+   correct for case-level confidence (it matches the entry-page
+   AI-literacy/trust questions, but hasn't been separately confirmed for
+   this use).
 
 3. **Final record shape (`assembleResearchRecord` in `complete.js`) is
    provisional.** It currently produces: `university`, `studyCondition`,
    `consent`, `participantInformation` (the rest of the entry-form
-   fields), `studyResponses` (the array of per-case answers), and
-   `timestamps.enteredAt` / `timestamps.submittedAt`. This has not been
-   checked against an approved data dictionary — confirm field names and
-   whether anything is missing (e.g. per-case timestamps beyond
-   started/submitted) or shouldn't be collected.
+   fields), `studyResponses` (the array of per-case answers — now
+   `diagnosisOptionId` + `diagnosisLabel` + `confidence` per case, since
+   diagnosis is MCQ), and `timestamps.enteredAt` / `timestamps.submittedAt`.
+   This has not been checked against an approved data dictionary —
+   confirm field names and whether anything is missing (e.g. per-case
+   timestamps beyond started/submitted) or shouldn't be collected.
 
 4. **Firebase project is not yet connected.** `js/firebase/config.js`
    has placeholder values — it needs the real Firebase Web config for
