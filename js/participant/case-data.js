@@ -41,6 +41,10 @@
  * "The platform should not provide live AI-generated clinical
  * information"). No AI API is called anywhere in this application.
  *
+ * Each item's `rationale` string is kept here but is NOT shown to
+ * participants — the AI panel displays only the suggested answer (see
+ * renderAiPanel in cases.js). Kept as data in case it's wanted later.
+ *
  * To change an item later, edit only its `aiSuggestion`.
  */
 

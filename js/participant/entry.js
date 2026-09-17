@@ -32,7 +32,11 @@
  * by the site mapping changing mid-study. The arm is never displayed to
  * the participant; allocation stays concealed.
  */
-import { saveParticipantDraft } from "../utils/local-storage.js";
+import {
+  saveParticipantDraft,
+  getParticipantDraft,
+  clearStudyProgress,
+} from "../utils/local-storage.js";
 import { armForInstitution } from "./study-arm.js";
 
 const FIELD_DEFS = [
@@ -215,7 +219,20 @@ function initFormSubmit() {
 
     // Save the participant's information + consent locally. Nothing is
     // written to Firestore here or anywhere before final study submission.
+    //
+    // Resubmitting entry (e.g. the participant — or a tester — goes back
+    // and picks a different institution) starts a new attempt. Any study
+    // progress left over from a PRIOR attempt under a different
+    // institution belongs to that earlier attempt's arm, not this one, so
+    // it must not be carried forward — otherwise the case runner's
+    // refresh-stability guard (which deliberately keeps an in-progress
+    // participant's arm fixed) would keep the stale arm instead of the
+    // one just selected here.
+    const previousDraft = getParticipantDraft();
     const participantData = collectParticipantData();
+    if (previousDraft && previousDraft.institution !== participantData.institution) {
+      clearStudyProgress();
+    }
     saveParticipantDraft(participantData);
 
     if (participantData.studyArm) {
