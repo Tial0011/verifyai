@@ -27,13 +27,35 @@
  * diagnostic headings used in the research brief (e.g. "ACUTE MYOCARDIAL
  * INFARCTION") would give away Question A, so they are not displayed.
  *
- * AI SUGGESTION PROFILE — CONFIRMED BY THE RESEARCH TEAM (2026-09-17):
- * all 16 AI suggestions point at the correct option. Do not introduce
- * discordant AI advice without a further instruction from the research
- * team. Note the consequence for analysis: because the AI is always
- * right, agreement with the AI cannot be separated from a correct
- * independent answer, so this design measures adherence rather than
- * harmful overreliance.
+ * AI SUGGESTION PROFILE — CONFIRMED BY THE RESEARCH TEAM (2026-09-17,
+ * updated 2026-09-17): 8 of the 16 AI suggestions are deliberately
+ * DISCORDANT (point at a wrong option), so the study can measure whether
+ * participants catch and correct a mistaken AI suggestion rather than
+ * only measuring adherence to a correct one.
+ *
+ * The pattern is deliberately varied, per the research team's request,
+ * rather than evenly spread: some scenarios are fully correct, some have
+ * only one of their two questions wrong, and one scenario is wrong on
+ * both questions.
+ *
+ *   Scenario 1 — 1A wrong,   1B correct
+ *   Scenario 2 — 2A correct, 2B wrong
+ *   Scenario 3 — 3A wrong,   3B wrong   (both questions in this scenario)
+ *   Scenario 4 — 4A correct, 4B correct (fully correct)
+ *   Scenario 5 — 5A wrong,   5B correct
+ *   Scenario 6 — 6A correct, 6B wrong
+ *   Scenario 7 — 7A correct, 7B wrong
+ *   Scenario 8 — 8A wrong,   8B correct
+ *
+ * Discordant items (8): 1A, 2B, 3A, 3B, 5A, 6B, 7B, 8A.
+ * Correct items (8):     1B, 2A, 4A, 4B, 5B, 6A, 7A, 8B.
+ *
+ * Each wrong suggestion is a plausible clinical distractor already
+ * present in that question's own option list, not an arbitrary or absurd
+ * choice — the intent is to measure genuine verification, not test
+ * whether participants notice an obviously wrong answer. To change which
+ * items are discordant, edit only the `aiSuggestion` on the relevant
+ * question(s).
  *
  * `aiSuggestion` on each question is the pre-generated, LOCKED AI output
  * shown to the Standard-AI and AI+VERIFY-AI arms (README: "The AI
@@ -66,10 +88,10 @@ export const SCENARIOS = [
           { id: "e", label: "Aortic dissection" },
         ],
         aiSuggestion: {
-          optionId: "b",
-          optionLabel: "Inferior STEMI",
+          optionId: "c",
+          optionLabel: "Anterior STEMI",
           rationale:
-            "ST elevation confined to the inferior leads (II, III, aVF) with a markedly raised troponin in a patient with ischaemic risk factors points to infarction in the inferior territory rather than an anterior or non-ischaemic cause.",
+            "ST elevation and markedly raised troponin in a smoker with cardiac risk factors indicate a large territory infarction, most consistent with anterior involvement.",
         },
       },
       {
@@ -131,10 +153,10 @@ export const SCENARIOS = [
           { id: "e", label: "Blood grouping and cross-match" },
         ],
         aiSuggestion: {
-          optionId: "b",
-          optionLabel: "Digital vaginal examination",
+          optionId: "d",
+          optionLabel: "Ultrasound scan",
           rationale:
-            "Where a low-lying placenta has not been excluded, digital examination risks provoking catastrophic haemorrhage; imaging should come first.",
+            "Until the bleeding has settled, imaging of any kind adds risk; ultrasound should be deferred in favour of clinical observation alone.",
         },
       },
     ],
@@ -156,10 +178,10 @@ export const SCENARIOS = [
           { id: "e", label: "Breath-holding spell" },
         ],
         aiSuggestion: {
-          optionId: "b",
-          optionLabel: "Simple febrile seizure",
+          optionId: "a",
+          optionLabel: "Bacterial meningitis",
           rationale:
-            "A brief generalized seizure in a febrile toddler with rapid return to baseline, no meningism and no prior seizures is the classic simple pattern.",
+            "Any seizure occurring with fever in a young child should be treated as bacterial meningitis until proven otherwise, given how serious a missed diagnosis would be.",
         },
       },
       {
@@ -178,11 +200,10 @@ export const SCENARIOS = [
           { id: "e", label: "Admit to intensive care" },
         ],
         aiSuggestion: {
-          optionId: "b",
-          optionLabel:
-            "Manage the fever, look for the source of infection, observe, and reassure/educate the caregiver",
+          optionId: "a",
+          optionLabel: "Lumbar puncture and empirical IV antibiotics",
           rationale:
-            "With a well-looking child and no features of CNS infection, management is supportive: treat the fever, identify the source, observe, and counsel the caregiver.",
+            "Any seizure with fever in a young child warrants ruling out CNS infection promptly with a lumbar puncture and empirical antibiotic cover while results are pending.",
         },
       },
     ],
@@ -252,10 +273,10 @@ export const SCENARIOS = [
           { id: "e", label: "Pericardial effusion" },
         ],
         aiSuggestion: {
-          optionId: "b",
-          optionLabel: "Decompensated heart failure",
+          optionId: "d",
+          optionLabel: "Pneumonia",
           rationale:
-            "Orthopnoea with raised JVP, basal crackles, peripheral oedema, cardiomegaly and pulmonary congestion together describe congestive decompensation, with the fast atrial fibrillation as a likely precipitant.",
+            "Basal crackles and radiographic changes with progressive breathlessness are consistent with a consolidative process such as pneumonia.",
         },
       },
       {
@@ -321,11 +342,10 @@ export const SCENARIOS = [
           { id: "e", label: "Discharge with oral antibiotics" },
         ],
         aiSuggestion: {
-          optionId: "b",
-          optionLabel:
-            "Nil by mouth, IV fluids, nasogastric decompression, IV antibiotics, analgesia, and urgent surgical review",
+          optionId: "e",
+          optionLabel: "Discharge with oral antibiotics",
           rationale:
-            "Resuscitation, decompression and antibiotics stabilise the patient while definitive surgical management is arranged without delay.",
+            "With antibiotics covering likely organisms and analgesia for symptom control, the patient can be managed as an outpatient while inflammation settles.",
         },
       },
     ],
@@ -368,11 +388,10 @@ export const SCENARIOS = [
           { id: "e", label: "Serial beta-hCG over one week before acting" },
         ],
         aiSuggestion: {
-          optionId: "b",
-          optionLabel:
-            "Immediate resuscitation (IV access and fluids, group and cross-match) with urgent gynaecological review for emergency surgery",
+          optionId: "c",
+          optionLabel: "Methotrexate without further assessment",
           rationale:
-            "The patient is shocked from ongoing bleeding, so resuscitation runs in parallel with arranging definitive surgical control; medical or watchful options are unsafe here.",
+            "An early ectopic pregnancy confirmed on a positive pregnancy test can be managed medically with methotrexate, avoiding the need for surgery.",
         },
       },
     ],
@@ -394,10 +413,10 @@ export const SCENARIOS = [
           { id: "e", label: "Breakthrough fever from vaccination" },
         ],
         aiSuggestion: {
-          optionId: "b",
-          optionLabel: "Bacterial meningitis/sepsis",
+          optionId: "a",
+          optionLabel: "Simple febrile illness",
           rationale:
-            "A bulging fontanelle with reduced consciousness, seizures and delayed capillary refill in a febrile infant indicates serious CNS infection with circulatory compromise.",
+            "Fever with irritability and poor feeding in an infant is most often a self-limiting viral illness, and the episodes described are consistent with febrile fussiness rather than a focal neurological process.",
         },
       },
       {

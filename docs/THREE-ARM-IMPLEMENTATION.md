@@ -59,10 +59,16 @@ transaction in `js/firebase/submission.js`.
 
 ## Decisions confirmed by the research team (2026-09-17)
 
-1. **AI answer profile.** All 16 locked AI suggestions point at the correct
-   option. No discordant AI advice is used. Analysis consequence: agreement with
-   the AI cannot be separated from a correct independent answer, so the AI arms
-   measure adherence to correct AI advice rather than harmful overreliance.
+1. **AI answer profile (updated 2026-09-17).** 8 of 16 AI suggestions are
+   deliberately discordant (point at a plausible wrong option), in a varied
+   pattern rather than evenly spread: Scenario 4 is fully correct, Scenario 3
+   is wrong on both its questions, and the rest have one right and one wrong.
+   Discordant items: **1A, 2B, 3A, 3B, 5A, 6B, 7B, 8A**. Correct items: 1B, 2A,
+   4A, 4B, 5B, 6A, 7A, 8B. This lets the study measure whether participants
+   catch and correct a mistaken AI suggestion, not just whether they agree
+   with a correct one. The AI suggestion shown/recorded on every question is
+   always the locked value in `case-data.js`, correct or not — no per-arm
+   difference in which items are discordant.
 2. **Site-to-arm mapping.** Ibadan → No-AI; Ondo → AI + VERIFY-AI; Babcock →
    Standard AI.
 3. **VERIFY-AI wording.** The prompt text and response options in
