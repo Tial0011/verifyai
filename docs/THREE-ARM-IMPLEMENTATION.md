@@ -39,7 +39,10 @@ shown above each. Option order and content are exactly as supplied. Scenario
 headings are shown as neutral text ("Scenario 3 of 8") because the diagnostic
 headings in the brief would give away Question A.
 
-The answer key is not in the client at all. No correctness feedback is shown at
+The answer key is not in the client at all — `case-data.js` never held it, and
+it is not shipped with this project folder. It is kept as a separate,
+researcher-only document that must never be added to this repo or deployed
+(handed to you outside this zip). No correctness feedback is shown at
 any point during the assessment.
 
 ## Data recorded per question
