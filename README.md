@@ -257,8 +257,14 @@ Technical implementation decisions may be made by the developer, but they must n
 
 ---
 
-**Status:** Early development / Landing Page phase
+**Status:** Participant flow implemented for all three study arms
 
 **Stack:** HTML + CSS + JavaScript + Firebase + Netlify
 
-**Current scope:** Landing page only
+**Current scope:** Landing page → participant entry/consent → 16-question
+clinical assessment in one of three conditions (No-AI, Standard AI,
+AI + VERIFY-AI) → single final Firestore submission. Researcher dashboard
+and exports are still not built.
+
+See `docs/THREE-ARM-IMPLEMENTATION.md` for how the arms are implemented,
+what data is recorded, and the open items awaiting research-team sign-off.

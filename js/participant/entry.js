@@ -25,12 +25,15 @@
  * code needs to change.
  * ---------------------------------------------------------------------
  *
- * Not yet built (blocked on research-team approval, not on this file):
- * the case content is placeholder-only (see js/participant/case-data.js),
- * and the Standard-AI / AI+VERIFY-AI arms for other institutions don't
- * exist yet — only University of Ibadan (No-AI) navigates past this page.
+ * Study arm: the participant's condition is resolved here, once, from
+ * their institution (see js/participant/study-arm.js) and stored on the
+ * draft. Storing it — rather than re-deriving it on every page — is what
+ * guarantees a participant can't land in a different arm by refreshing or
+ * by the site mapping changing mid-study. The arm is never displayed to
+ * the participant; allocation stays concealed.
  */
 import { saveParticipantDraft } from "../utils/local-storage.js";
+import { armForInstitution } from "./study-arm.js";
 
 const FIELD_DEFS = [
   { wrapperId: "institution-field", kind: "text", controlId: "institution" },
@@ -122,6 +125,8 @@ function collectParticipantData() {
   const aiTools = getField("ai-tools");
   if (aiTools) data["ai-tools"] = aiTools.value.trim();
 
+  // Concealed allocation: resolved once here and carried with the draft.
+  data.studyArm = armForInstitution(data.institution);
   data.savedAt = new Date().toISOString();
   return data;
 }
@@ -213,19 +218,19 @@ function initFormSubmit() {
     const participantData = collectParticipantData();
     saveParticipantDraft(participantData);
 
-    if (participantData.institution === "university-of-ibadan") {
-      // Only the No-AI arm (University of Ibadan) is built so far.
+    if (participantData.studyArm) {
+      // All three arms run through the same case runner, which renders
+      // the condition-appropriate flow.
       window.location.href = "cases.html";
       return;
     }
 
-    // Standard-AI / AI+VERIFY-AI arms (other institutions) aren't built
-    // yet — show a clear in-page note instead of navigating anywhere.
-    // The local draft is already saved and will be picked up once those
-    // flows exist.
+    // Institution not present in the allocation map — don't guess at a
+    // condition. The draft is saved; the research team can correct the
+    // mapping in js/participant/study-arm.js.
     if (status) {
       status.textContent =
-        "Thanks — your information has been saved for this session. The next stage of the study for your institution is not yet available.";
+        "Thanks — your information has been saved for this session. The next stage of the study is not yet available for your institution.";
       status.setAttribute("data-state", "pending");
     }
 

@@ -31,7 +31,8 @@ function isParticipantShapeValid(data) {
     && data.participantId is string
     && data.participantId.matches('^VA[0-9]{3}$')
     && data.participantId == request.resource.id
-    && data.studyCondition == 'no_ai'
+    // One of the three study arms (see js/participant/study-arm.js).
+    && data.studyCondition in ['no_ai', 'standard_ai', 'ai_verify_ai']
     && data.consent == true
     && data.createdAt == request.time;
 }

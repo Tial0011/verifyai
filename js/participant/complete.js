@@ -14,7 +14,7 @@
  * research-team-approved data dictionary — treat the exact field names
  * here as provisional until that review happens.
  */
-import { CASES } from "./case-data.js";
+import { TOTAL_QUESTIONS } from "./case-data.js";
 import {
   getParticipantDraft,
   getStudyProgress,
@@ -22,18 +22,31 @@ import {
   clearAllLocalStudyState,
 } from "../utils/local-storage.js";
 import { submitFinalRecord } from "../firebase/submission.js";
-
-const NO_AI_INSTITUTION = "university-of-ibadan";
+import { resolveArm } from "./study-arm.js";
 
 function assembleResearchRecord(draft, progress) {
-  const { institution, savedAt, ["consent-checkbox"]: consent, ...participantInformation } = draft;
+  const {
+    institution,
+    savedAt,
+    studyArm,
+    ["consent-checkbox"]: consent,
+    ...participantInformation
+  } = draft;
 
   return {
     university: institution,
-    studyCondition: "no_ai",
+    // The arm recorded on the progress object is the one the participant
+    // actually ran under, so it wins over anything re-derived later.
+    studyCondition: progress.studyArm || studyArm || resolveArm(draft),
     consent: Boolean(consent),
     participantInformation,
+    // One entry per question: scenario/question ids, final answer,
+    // confidence, whether an AI suggestion was shown and what it was,
+    // VERIFY-AI step responses, independent answer, agreement/change
+    // flags, timestamps, completion status.
     studyResponses: progress.responses,
+    questionsCompleted: progress.responses.filter((r) => r && r.completed).length,
+    questionsTotal: TOTAL_QUESTIONS,
     timestamps: {
       enteredAt: savedAt,
       submittedAt: new Date().toISOString(),
@@ -71,14 +84,14 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "entry.html";
     return;
   }
-  if (draft.institution !== NO_AI_INSTITUTION) {
-    // Mirrors the same guard as cases.js — this flow only covers the
-    // No-AI arm so far.
+  if (!resolveArm(draft)) {
+    // Mirrors the same guard as cases.js — no study condition could be
+    // resolved for this institution.
     document.getElementById("submit-state").innerHTML =
-      '<p class="case-blocked">This flow is only implemented for the No-AI study arm so far.</p>';
+      '<p class="case-blocked">We couldn\'t determine the study condition for your institution. Please contact the research team.</p>';
     return;
   }
-  if (!progress || progress.currentIndex < CASES.length) {
+  if (!progress || progress.currentIndex < TOTAL_QUESTIONS) {
     window.location.href = "cases.html";
     return;
   }
