@@ -181,3 +181,25 @@
   flex-direction: column;
   gap: 0.35rem;
 }
+
+/* Content revealed after the first pick (AI arms) --------------------- */
+
+.reveal-root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.reveal-root:empty {
+  display: none;
+}
+
+.reveal-root .ai-panel {
+  margin-top: 0;
+}
+
+.reveal-hint {
+  margin: -0.75rem 0 0;
+  font-size: 0.9rem;
+  color: var(--color-ink-faint);
+}

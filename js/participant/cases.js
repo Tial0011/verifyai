@@ -1,29 +1,38 @@
 /**
  * VERIFY-AI — clinical assessment runner (all three study arms).
  *
- * Walks the participant through the 16 questions (8 scenarios × Question
- * A and B) one at a time, rendering in place rather than navigating, and
- * saving progress to localStorage after every question. Nothing is
- * written to Firestore here — the single Firestore write still happens
- * once, at final submission (complete.html).
+ * Walks the participant through the 8 questions (one per scenario), one
+ * at a time, rendering in place rather than navigating, and saving
+ * progress to localStorage after every step. Nothing is written to
+ * Firestore here — the single Firestore write still happens once, at
+ * final submission (complete.html).
  *
  * What each arm sees (this is the core of the study design — see
  * js/participant/study-arm.js):
  *
- *   No-AI          scenario → question → answer.
- *                  No AI suggestion is rendered, no AI markup exists in
- *                  the DOM, no AI request is made (none is made in ANY
- *                  arm — AI output is pre-generated and locked in
+ *   No-AI          scenario → question → answer → confidence, on one
+ *                  screen. No AI suggestion is rendered, no AI markup
+ *                  exists in the DOM, no AI request is made (none is made
+ *                  in ANY arm — AI output is pre-generated and locked in
  *                  case-data.js).
  *
- *   Standard AI    scenario → question → AI suggestion panel → answer.
- *                  The suggestion is labelled as an AI suggestion and is
- *                  never pre-selected for the participant. The VERIFY-AI
- *                  workflow is not rendered.
+ *   Standard AI    scenario → question. The moment the participant picks
+ *                  an answer, that first pick is recorded and the locked
+ *                  AI suggestion appears below. They can then re-pick; the
+ *                  answer they submit is their final answer. The
+ *                  VERIFY-AI workflow is not rendered.
  *
- *   AI + VERIFY-AI scenario → question → AI suggestion panel →
- *                  six-step VERIFY-AI check → answer. The final answer
- *                  cannot be submitted until all six steps are complete.
+ *   AI + VERIFY-AI Same as Standard AI, except the six-step VERIFY-AI
+ *                  check appears together with the AI suggestion. The
+ *                  final answer cannot be submitted until all six steps
+ *                  are complete.
+ *
+ * The AI suggestion is deliberately withheld until the participant has
+ * made a first pick. That pick is stored as `initialAnswerOptionId`
+ * before any AI markup is rendered, and is never overwritten — later
+ * re-picks only change the final answer. If the page is refreshed after
+ * the reveal, the suggestion is shown again with the first pick
+ * pre-selected.
  *
  * Research integrity: no correctness feedback of any kind is shown during
  * the assessment, and the answer key is not present in the client.
@@ -82,50 +91,20 @@ function renderAiPanel(question) {
   `;
 }
 
-function renderQuestion(progress, arm) {
-  const root = document.getElementById("case-root");
-  if (!root) return;
-
-  const index = progress.currentIndex;
-  const question = QUESTIONS[index];
-  const showAi = armShowsAi(arm);
-  const showVerify = armShowsVerifyWorkflow(arm);
-
-  // Record when this question was first shown (once per question).
-  if (!progress.responses[index]) {
-    progress.responses[index] = {
-      scenarioId: question.scenarioId,
-      questionId: question.id,
-      questionIndex: index,
-      studyArm: arm,
-      aiSuggestionShown: showAi,
-      aiSuggestion: showAi
-        ? { optionId: question.aiSuggestion.optionId, optionLabel: question.aiSuggestion.optionLabel }
-        : null,
-      verifyWorkflowShown: showVerify,
-      startedAt: new Date().toISOString(),
-      aiSuggestionShownAt: showAi ? new Date().toISOString() : null,
-      completed: false,
-    };
-    saveStudyProgress(progress);
-  }
-
-  root.innerHTML = `
+function renderHeader(question, index) {
+  return `
     <p class="case-progress">${escapeHtml(question.scenarioTitle)} · Question ${
     index + 1
   } of ${TOTAL_QUESTIONS}</p>
-    <h1 class="case-title">Question ${escapeHtml(question.id)}</h1>
+    <h1 class="case-title">Question ${index + 1}</h1>
     <div class="case-vignette">${escapeHtml(question.vignette)}</div>
+  `;
+}
 
-    ${showAi ? renderAiPanel(question) : ""}
-
-    <form id="case-form" novalidate>
-      ${showVerify ? renderVerifyWorkflow(question) : ""}
-
+function renderAnswerFieldset(question, selectedId) {
+  return `
       <fieldset class="field choice-fieldset" id="answer-field" data-invalid="false">
-        <legend>${escapeHtml(question.prompt)}${
-    showAi ? " (your final answer)" : ""
-  }</legend>
+        <legend>${escapeHtml(question.prompt)}</legend>
         <div class="choice-options choice-options--stacked" role="radiogroup" aria-label="${escapeHtml(
           question.prompt
         )}" aria-describedby="answer-error">
@@ -134,13 +113,17 @@ function renderQuestion(progress, arm) {
               (opt) =>
                 `<label class="choice-option"><input type="radio" name="answer" value="${escapeHtml(
                   opt.id
-                )}" /> ${escapeHtml(opt.label)}</label>`
+                )}"${opt.id === selectedId ? " checked" : ""} /> ${escapeHtml(opt.label)}</label>`
             )
             .join("")}
         </div>
         <p class="field__error" id="answer-error">Please select an answer before continuing.</p>
       </fieldset>
+  `;
+}
 
+function renderConfidenceFieldset() {
+  return `
       <fieldset class="field choice-fieldset" id="confidence-field" data-invalid="false">
         <legend>${escapeHtml(CONFIDENCE_PROMPT)}</legend>
         <div class="choice-options" role="radiogroup" aria-label="Confidence, 1 low to 5 high" aria-describedby="confidence-error">
@@ -153,32 +136,161 @@ function renderQuestion(progress, arm) {
         </div>
         <p class="field__error" id="confidence-error">Please select a confidence rating.</p>
       </fieldset>
+  `;
+}
 
+function renderActions(index) {
+  return `
       <div class="form-actions">
         <button class="btn btn-primary" type="submit">
           ${index + 1 === TOTAL_QUESTIONS ? "Finish assessment" : "Next question"}
         </button>
         <p class="form-status" id="case-status" role="status" aria-live="polite"></p>
       </div>
+  `;
+}
+
+/**
+ * Everything that appears only after the participant's first pick in the
+ * AI arms: the locked AI suggestion, the VERIFY-AI check (VERIFY arm
+ * only), the confidence rating and the submit button. None of this
+ * markup is in the DOM before the first pick.
+ */
+function renderRevealed(question, index, showVerify) {
+  return `
+      ${renderAiPanel(question)}
+      <p class="reveal-hint">You can change your answer above if you wish.</p>
+      ${showVerify ? renderVerifyWorkflow(question) : ""}
+      ${renderConfidenceFieldset()}
+      ${renderActions(index)}
+  `;
+}
+
+/**
+ * Renders one question.
+ *
+ *   No-AI arm:      answer + confidence + submit, all on one screen.
+ *   Standard AI /
+ *   AI + VERIFY-AI: only the question and options are shown at first.
+ *                   The moment the participant picks an answer, that
+ *                   first pick is recorded and the AI suggestion (and,
+ *                   in the VERIFY-AI arm, the six-step check) appears
+ *                   below. The participant may then re-pick freely; the
+ *                   answer they submit is the final answer.
+ */
+function renderQuestion(progress, arm) {
+  const root = document.getElementById("case-root");
+  if (!root) return;
+
+  const index = progress.currentIndex;
+  const question = QUESTIONS[index];
+  const showAi = armShowsAi(arm);
+  const showVerify = armShowsVerifyWorkflow(arm);
+
+  // Record when this question was first shown (once per question). The
+  // AI suggestion is NOT recorded as shown here — only when it is
+  // actually revealed after the first pick.
+  if (!progress.responses[index]) {
+    progress.responses[index] = {
+      scenarioId: question.scenarioId,
+      questionId: question.id,
+      questionIndex: index,
+      studyArm: arm,
+      aiSuggestionShown: false,
+      aiSuggestion: null,
+      verifyWorkflowShown: false,
+      startedAt: new Date().toISOString(),
+      aiSuggestionShownAt: null,
+      completed: false,
+    };
+    saveStudyProgress(progress);
+  }
+
+  // If the AI was already revealed for this question (e.g. the page was
+  // refreshed after the first pick), show it again straight away with the
+  // first pick pre-selected. The recorded first pick is never overwritten.
+  const alreadyRevealed = showAi && Boolean(progress.responses[index].initialAnswerOptionId);
+  const preselected = alreadyRevealed ? progress.responses[index].initialAnswerOptionId : null;
+
+  root.innerHTML = `
+    ${renderHeader(question, index)}
+
+    <form id="case-form" novalidate>
+      ${renderAnswerFieldset(question, preselected)}
+
+      <div class="reveal-root" id="reveal-root">
+        ${
+          !showAi
+            ? `${renderConfidenceFieldset()}${renderActions(index)}`
+            : alreadyRevealed
+            ? renderRevealed(question, index, showVerify)
+            : ""
+        }
+      </div>
     </form>
   `;
 
-  document.getElementById("case-form").addEventListener("submit", (event) => {
+  const form = document.getElementById("case-form");
+  form.addEventListener("submit", (event) => {
     event.preventDefault();
     handleSubmit(progress, arm, index);
   });
 
+  if (showAi && !alreadyRevealed) {
+    // First pick → record it, then reveal the AI suggestion.
+    form.addEventListener("change", (event) => {
+      if (!event.target || event.target.name !== "answer") return;
+      if (progress.responses[index].initialAnswerOptionId) return; // already revealed
+      revealAi(progress, arm, index, event.target.value);
+    });
+  }
+
   window.scrollTo({ top: 0, behavior: "auto" });
+}
+
+/** Records the participant's first pick, then renders the AI suggestion. */
+function revealAi(progress, arm, index, pickedOptionId) {
+  const question = QUESTIONS[index];
+  const showVerify = armShowsVerifyWorkflow(arm);
+  const picked = question.options.find((opt) => opt.id === pickedOptionId);
+  const now = new Date().toISOString();
+
+  // Record the first pick BEFORE any AI markup is rendered.
+  progress.responses[index] = {
+    ...progress.responses[index],
+    initialAnswerOptionId: pickedOptionId,
+    initialAnswerLabel: picked ? picked.label : null,
+    initialAnswerAt: now,
+    aiSuggestionShown: true,
+    aiSuggestion: {
+      optionId: question.aiSuggestion.optionId,
+      optionLabel: question.aiSuggestion.optionLabel,
+    },
+    verifyWorkflowShown: showVerify,
+    aiSuggestionShownAt: now,
+  };
+  saveStudyProgress(progress);
+
+  const revealRoot = document.getElementById("reveal-root");
+  revealRoot.innerHTML = renderRevealed(question, index, showVerify);
+
+  const panel = revealRoot.querySelector(".ai-panel");
+  if (panel) panel.scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
 
 function handleSubmit(progress, arm, index) {
   const question = QUESTIONS[index];
+  const showAi = armShowsAi(arm);
   const status = document.getElementById("case-status");
   const answerField = document.getElementById("answer-field");
   const confidenceField = document.getElementById("confidence-field");
 
   const answerInput = document.querySelector('input[name="answer"]:checked');
   const confidenceInput = document.querySelector('input[name="confidence"]:checked');
+
+  // AI arms can only submit after the reveal (the submit button does not
+  // exist before it); guard anyway against implicit form submission.
+  if (showAi && !progress.responses[index].initialAnswerOptionId) return;
 
   const answerValid = Boolean(answerInput);
   const confidenceValid = Boolean(confidenceInput);
@@ -205,8 +317,9 @@ function handleSubmit(progress, arm, index) {
   }
 
   const selectedOption = question.options.find((opt) => opt.id === answerInput.value);
-  const aiOptionId = armShowsAi(arm) ? question.aiSuggestion.optionId : null;
+  const aiOptionId = showAi ? question.aiSuggestion.optionId : null;
   const independentAnswer = verify ? independentAnswerFrom(verify.responses) : null;
+  const initialAnswerId = progress.responses[index].initialAnswerOptionId || null;
 
   progress.responses[index] = {
     ...progress.responses[index],
@@ -215,10 +328,10 @@ function handleSubmit(progress, arm, index) {
     confidence: Number(confidenceInput.value),
     verifyResponses: verify ? verify.responses : null,
     independentAnswerOptionId: independentAnswer,
-    // Only measurable where an independent answer was captured first
-    // (VERIFY-AI arm). Null elsewhere rather than guessed.
+    // First pick (before the AI suggestion appeared) vs. final answer.
+    // Null in the No-AI arm, where there is no AI to change an answer after.
     answerChangedAfterAi:
-      independentAnswer === null ? null : independentAnswer !== answerInput.value,
+      showAi && initialAnswerId !== null ? initialAnswerId !== answerInput.value : null,
     answerMatchesAiSuggestion: aiOptionId === null ? null : aiOptionId === answerInput.value,
     submittedAt: new Date().toISOString(),
     completed: true,

@@ -1,7 +1,9 @@
 /**
  * VERIFY-AI — approved clinical assessment content.
  *
- * 8 clinical scenarios × 2 questions (A and B) = 16 questions.
+ * 8 clinical scenarios × 1 question each = 8 questions. (The follow-up
+ * "B" questions were removed; question ids keep their original "1A"…"8A"
+ * form so they stay aligned with the researcher-held answer key.)
  *
  * This file is intentionally the ONLY place assessment content lives.
  * Nothing in cases.js / verify-workflow.js / complete.js needs to change
@@ -11,13 +13,11 @@
  *     id, title, vignette,
  *     questions: [
  *       { id, prompt, options: [{ id, label }, ...], aiSuggestion },
- *       ...
  *     ]
  *   }
  *
  * ⚠️ ANSWER KEY IS NOT IN THIS FILE — BY DESIGN.
- * The correct answer for every question is B, but that key is deliberately
- * NOT shipped to the participant client (README, "Security Principles":
+ * The correct answers are deliberately NOT shipped to the participant client (README, "Security Principles":
  * gold diagnosis / AI correctness / scoring metadata must not reach the
  * browser). Scoring happens off-client against the research team's key.
  * Nothing in the participant flow ever tells a participant whether an
@@ -27,28 +27,17 @@
  * diagnostic headings used in the research brief (e.g. "ACUTE MYOCARDIAL
  * INFARCTION") would give away Question A, so they are not displayed.
  *
- * AI SUGGESTION PROFILE — CONFIRMED BY THE RESEARCH TEAM (2026-09-17,
- * updated 2026-09-17): 8 of the 16 AI suggestions are deliberately
- * DISCORDANT (point at a wrong option), so the study can measure whether
- * participants catch and correct a mistaken AI suggestion rather than
- * only measuring adherence to a correct one.
+ * AI SUGGESTION PROFILE: some of the AI suggestions are deliberately
+ * DISCORDANT (point at a plausible wrong option), so the study can measure
+ * whether participants catch and correct a mistaken AI suggestion rather
+ * than only measuring adherence to a correct one.
  *
- * The pattern is deliberately varied, per the research team's request,
- * rather than evenly spread: some scenarios are fully correct, some have
- * only one of their two questions wrong, and one scenario is wrong on
- * both questions.
+ * Current profile, as specified by the research team (only the
+ * `aiSuggestion` on each item differs; the questions and options are
+ * unchanged):
  *
- *   Scenario 1 — 1A wrong,   1B correct
- *   Scenario 2 — 2A correct, 2B wrong
- *   Scenario 3 — 3A wrong,   3B wrong   (both questions in this scenario)
- *   Scenario 4 — 4A correct, 4B correct (fully correct)
- *   Scenario 5 — 5A wrong,   5B correct
- *   Scenario 6 — 6A correct, 6B wrong
- *   Scenario 7 — 7A correct, 7B wrong
- *   Scenario 8 — 8A wrong,   8B correct
- *
- * Discordant items (8): 1A, 2B, 3A, 3B, 5A, 6B, 7B, 8A.
- * Correct items (8):     1B, 2A, 4A, 4B, 5B, 6A, 7A, 8B.
+ *   AI suggestion correct   (4): 1A, 4A, 5A, 7A
+ *   AI suggestion discordant (4): 2A, 3A, 6A, 8A
  *
  * Each wrong suggestion is a plausible clinical distractor already
  * present in that question's own option list, not an arbitrary or absurd
@@ -88,33 +77,10 @@ export const SCENARIOS = [
           { id: "e", label: "Aortic dissection" },
         ],
         aiSuggestion: {
-          optionId: "c",
-          optionLabel: "Anterior STEMI",
-          rationale:
-            "ST elevation and markedly raised troponin in a smoker with cardiac risk factors indicate a large territory infarction, most consistent with anterior involvement.",
-        },
-      },
-      {
-        id: "1B",
-        prompt:
-          "Following the diagnosis in Question 1A, what is the most appropriate immediate management?",
-        options: [
-          { id: "a", label: "Oral antibiotics and outpatient follow-up" },
-          {
-            id: "b",
-            label:
-              "Urgent reperfusion therapy (primary PCI or fibrinolysis) plus aspirin, a P2Y12 inhibitor, and anticoagulation",
-          },
-          { id: "c", label: "Immediate discharge with lifestyle advice" },
-          { id: "d", label: "IV corticosteroids" },
-          { id: "e", label: "Observation only, with no pharmacological treatment" },
-        ],
-        aiSuggestion: {
           optionId: "b",
-          optionLabel:
-            "Urgent reperfusion therapy (primary PCI or fibrinolysis) plus aspirin, a P2Y12 inhibitor, and anticoagulation",
+          optionLabel: "Inferior STEMI",
           rationale:
-            "ST-elevation infarction is a time-critical occlusion; restoring flow as early as possible alongside antiplatelet and anticoagulant therapy is the priority.",
+            "ST elevation in leads II, III and aVF with markedly raised troponin and typical ischaemic pain indicates infarction of the inferior wall.",
         },
       },
     ],
@@ -136,27 +102,10 @@ export const SCENARIOS = [
           { id: "e", label: "Normal labour" },
         ],
         aiSuggestion: {
-          optionId: "b",
-          optionLabel: "Placenta praevia",
+          optionId: "a",
+          optionLabel: "Placental abruption",
           rationale:
-            "Painless bleeding with a soft, non-tender uterus and a reassuring fetal heart rate fits a low-lying placenta rather than abruption or rupture, both of which are typically painful.",
-        },
-      },
-      {
-        id: "2B",
-        prompt: "In the scenario above, which of the following should be avoided?",
-        options: [
-          { id: "a", label: "Intravenous access" },
-          { id: "b", label: "Digital vaginal examination" },
-          { id: "c", label: "Fetal heart rate monitoring" },
-          { id: "d", label: "Ultrasound scan" },
-          { id: "e", label: "Blood grouping and cross-match" },
-        ],
-        aiSuggestion: {
-          optionId: "d",
-          optionLabel: "Ultrasound scan",
-          rationale:
-            "Until the bleeding has settled, imaging of any kind adds risk; ultrasound should be deferred in favour of clinical observation alone.",
+            "Sudden antepartum bleeding in the third trimester is most often due to separation of the placenta from the uterine wall.",
         },
       },
     ],
@@ -184,28 +133,6 @@ export const SCENARIOS = [
             "Any seizure occurring with fever in a young child should be treated as bacterial meningitis until proven otherwise, given how serious a missed diagnosis would be.",
         },
       },
-      {
-        id: "3B",
-        prompt:
-          "Which of the following is the most appropriate next step for the child in Question 3A?",
-        options: [
-          { id: "a", label: "Lumbar puncture and empirical IV antibiotics" },
-          {
-            id: "b",
-            label:
-              "Manage the fever, look for the source of infection, observe, and reassure/educate the caregiver",
-          },
-          { id: "c", label: "Immediate CT brain" },
-          { id: "d", label: "Start maintenance anticonvulsants" },
-          { id: "e", label: "Admit to intensive care" },
-        ],
-        aiSuggestion: {
-          optionId: "a",
-          optionLabel: "Lumbar puncture and empirical IV antibiotics",
-          rationale:
-            "Any seizure with fever in a young child warrants ruling out CNS infection promptly with a lumbar puncture and empirical antibiotic cover while results are pending.",
-        },
-      },
     ],
   },
   {
@@ -231,29 +158,6 @@ export const SCENARIOS = [
             "Abrupt severe pain with a high-riding, horizontally lying testis and an absent cremasteric reflex, without fever or urinary symptoms, is a torsion picture rather than infection.",
         },
       },
-      {
-        id: "4B",
-        prompt:
-          "What is the most appropriate next step in the management of the boy in Question 4A?",
-        options: [
-          { id: "a", label: "Wait for scrotal Doppler ultrasound before deciding on treatment" },
-          {
-            id: "b",
-            label:
-              "Urgent urology referral for surgical exploration, without letting imaging delay definitive treatment",
-          },
-          { id: "c", label: "Course of oral antibiotics" },
-          { id: "d", label: "Discharge with analgesia and outpatient review" },
-          { id: "e", label: "Elective surgery in 1–2 weeks" },
-        ],
-        aiSuggestion: {
-          optionId: "b",
-          optionLabel:
-            "Urgent urology referral for surgical exploration, without letting imaging delay definitive treatment",
-          rationale:
-            "Testicular viability falls sharply with time, so exploration should not be delayed for investigations when the clinical picture is already suggestive.",
-        },
-      },
     ],
   },
   {
@@ -273,33 +177,10 @@ export const SCENARIOS = [
           { id: "e", label: "Pericardial effusion" },
         ],
         aiSuggestion: {
-          optionId: "d",
-          optionLabel: "Pneumonia",
-          rationale:
-            "Basal crackles and radiographic changes with progressive breathlessness are consistent with a consolidative process such as pneumonia.",
-        },
-      },
-      {
-        id: "5B",
-        prompt:
-          "Following the diagnosis in Question 5A, which of the following is the most appropriate initial management?",
-        options: [
-          { id: "a", label: "Oral antibiotics and outpatient follow-up" },
-          {
-            id: "b",
-            label:
-              "Oxygen if hypoxaemic, IV loop diuretic (e.g., furosemide), fluid/salt restriction as appropriate, and treatment of the precipitating cause",
-          },
-          { id: "c", label: "Immediate anticoagulation alone for atrial fibrillation" },
-          { id: "d", label: "IV corticosteroids" },
-          { id: "e", label: "Elective discharge with lifestyle advice" },
-        ],
-        aiSuggestion: {
           optionId: "b",
-          optionLabel:
-            "Oxygen if hypoxaemic, IV loop diuretic (e.g., furosemide), fluid/salt restriction as appropriate, and treatment of the precipitating cause",
+          optionLabel: "Decompensated heart failure",
           rationale:
-            "Initial care targets congestion and oxygenation while addressing what tipped the patient over — here the uncontrolled ventricular rate.",
+            "Orthopnoea, raised JVP, basal crackles, peripheral oedema, cardiomegaly and pulmonary congestion together indicate fluid overload from a failing heart.",
         },
       },
     ],
@@ -321,31 +202,10 @@ export const SCENARIOS = [
           { id: "e", label: "Bowel obstruction" },
         ],
         aiSuggestion: {
-          optionId: "b",
-          optionLabel: "Perforated peptic ulcer",
+          optionId: "c",
+          optionLabel: "Acute pancreatitis",
           rationale:
-            "Free gas under the diaphragm with sudden generalized pain and board-like rigidity, on a background of untreated epigastric pain, indicates a perforated viscus of peptic origin.",
-        },
-      },
-      {
-        id: "6B",
-        prompt: "What is the most appropriate next step for the patient in Question 6A?",
-        options: [
-          { id: "a", label: "Oral rehydration and antiemetics at home" },
-          {
-            id: "b",
-            label:
-              "Nil by mouth, IV fluids, nasogastric decompression, IV antibiotics, analgesia, and urgent surgical review",
-          },
-          { id: "c", label: "Outpatient endoscopy in 1 week" },
-          { id: "d", label: "Laxatives" },
-          { id: "e", label: "Discharge with oral antibiotics" },
-        ],
-        aiSuggestion: {
-          optionId: "e",
-          optionLabel: "Discharge with oral antibiotics",
-          rationale:
-            "With antibiotics covering likely organisms and analgesia for symptom control, the patient can be managed as an outpatient while inflammation settles.",
+            "Severe epigastric-onset pain with guarding and absent bowel sounds is consistent with an acute inflammatory process of the pancreas.",
         },
       },
     ],
@@ -373,27 +233,6 @@ export const SCENARIOS = [
             "A positive pregnancy test with adnexal and cervical motion tenderness plus haemodynamic instability points to intraperitoneal bleeding from an extrauterine pregnancy.",
         },
       },
-      {
-        id: "7B",
-        prompt: "What is the most appropriate immediate management for the woman in Question 7A?",
-        options: [
-          { id: "a", label: "Outpatient ultrasound in 48 hours" },
-          {
-            id: "b",
-            label:
-              "Immediate resuscitation (IV access and fluids, group and cross-match) with urgent gynaecological review for emergency surgery",
-          },
-          { id: "c", label: "Methotrexate without further assessment" },
-          { id: "d", label: "Reassurance and discharge" },
-          { id: "e", label: "Serial beta-hCG over one week before acting" },
-        ],
-        aiSuggestion: {
-          optionId: "c",
-          optionLabel: "Methotrexate without further assessment",
-          rationale:
-            "An early ectopic pregnancy confirmed on a positive pregnancy test can be managed medically with methotrexate, avoiding the need for surgery.",
-        },
-      },
     ],
   },
   {
@@ -419,35 +258,13 @@ export const SCENARIOS = [
             "Fever with irritability and poor feeding in an infant is most often a self-limiting viral illness, and the episodes described are consistent with febrile fussiness rather than a focal neurological process.",
         },
       },
-      {
-        id: "8B",
-        prompt: "What is the most appropriate immediate management for the infant in Question 8A?",
-        options: [
-          { id: "a", label: "Antipyretics and review in clinic in 24 hours" },
-          {
-            id: "b",
-            label:
-              "Immediate IV access, blood cultures, fluid resuscitation, and empirical IV antibiotics without delay, with urgent admission",
-          },
-          { id: "c", label: "Oral antibiotics at home" },
-          { id: "d", label: "Wait for CSF results before starting antibiotics" },
-          { id: "e", label: "Discharge with antipyretic and safety-net advice only" },
-        ],
-        aiSuggestion: {
-          optionId: "b",
-          optionLabel:
-            "Immediate IV access, blood cultures, fluid resuscitation, and empirical IV antibiotics without delay, with urgent admission",
-          rationale:
-            "Antibiotics and resuscitation should not wait for investigations when suspicion of bacterial meningitis or sepsis is high; delay increases mortality.",
-        },
-      },
     ],
   },
 ];
 
 /**
- * Flat, ordered list of all 16 questions with their scenario context
- * attached. The case runner walks THIS list, so "question N of 16" and
+ * Flat, ordered list of all 8 questions with their scenario context
+ * attached. The case runner walks THIS list, so "question N of 8" and
  * scenario grouping both stay derived from one source.
  */
 export const QUESTIONS = SCENARIOS.flatMap((scenario, scenarioIndex) =>
@@ -461,7 +278,7 @@ export const QUESTIONS = SCENARIOS.flatMap((scenario, scenarioIndex) =>
   }))
 );
 
-export const TOTAL_QUESTIONS = QUESTIONS.length; // 16
+export const TOTAL_QUESTIONS = QUESTIONS.length; // 8
 
 /** Confidence rating prompt, asked after every question (pre-existing measure). */
 export const CONFIDENCE_PROMPT = "How confident are you in this answer?";

@@ -261,7 +261,7 @@ Technical implementation decisions may be made by the developer, but they must n
 
 **Stack:** HTML + CSS + JavaScript + Firebase + Netlify
 
-**Current scope:** Landing page → participant entry/consent → 16-question
+**Current scope:** Landing page → participant entry/consent → 8-question
 clinical assessment in one of three conditions (No-AI, Standard AI,
 AI + VERIFY-AI) → single final Firestore submission. Researcher dashboard
 and exports are still not built.
