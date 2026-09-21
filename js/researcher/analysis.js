@@ -177,34 +177,226 @@ function aiResponseCount(participants) {
   );
 }
 
-function renderBars(elementId, groups, options = {}) {
+function chartHost(elementId) {
   const el = $(elementId);
+  if (!el) return null;
+  el.classList.add("r-analysis-chart-host");
+  return el;
+}
+
+function chartEmpty(el) {
+  el.innerHTML = `<div class="r-analysis-no-data">No usable data for this view.</div>`;
+}
+
+function renderBars(elementId, groups, options = {}) {
+  const el = chartHost(elementId);
   if (!el) return;
   if (!groups.length) {
-    el.innerHTML = `<div class="r-analysis-no-data">No usable data for this view.</div>`;
+    chartEmpty(el);
     return;
   }
 
-  const max = Math.max(...groups.map((g) => Number(g.value) || 0), 1);
+  const max = options.max ?? Math.max(...groups.map((g) => Number(g.value) || 0), 1);
   const unit = options.unit || "";
-  el.innerHTML = groups.map((g) => {
+  const format = options.format || ((v) => `${v}${unit}`);
+  const width = 760;
+  const rowH = 64;
+  const left = 178;
+  const right = 92;
+  const chartW = width - left - right;
+  const height = Math.max(150, groups.length * rowH + 24);
+
+  el.innerHTML = `
+    <div class="r-svg-chart-wrap">
+      <svg class="r-svg-chart r-svg-bars" viewBox="0 0 ${width} ${height}" role="img"
+        aria-label="${escapeHtml(options.ariaLabel || "Bar chart")}">
+        ${groups.map((g, i) => {
+          const value = Number(g.value) || 0;
+          const ratio = max > 0 ? Math.min(1, Math.max(0, value / max)) : 0;
+          const y = 18 + i * rowH;
+          const barW = Math.max(value > 0 ? 6 : 0, ratio * chartW);
+          const color = g.color || "teal";
+          return `
+            <g class="r-bar-group" tabindex="0" role="button"
+              data-chart-label="${escapeHtml(g.label)}"
+              data-chart-value="${escapeHtml(format(value))}"
+              data-chart-sub="${escapeHtml(g.sub || "")}">
+              <text x="${left - 14}" y="${y + 15}" text-anchor="end" class="r-svg-label">${escapeHtml(g.label)}</text>
+              <rect x="${left}" y="${y}" width="${chartW}" height="18" rx="9" class="r-svg-track"></rect>
+              <rect x="${left}" y="${y}" width="${barW}" height="18" rx="9" class="r-svg-fill r-svg-fill--${color}">
+                <title>${escapeHtml(g.label)}: ${escapeHtml(format(value))}</title>
+              </rect>
+              <text x="${left + chartW + 12}" y="${y + 15}" class="r-svg-value">${escapeHtml(format(value))}</text>
+            </g>`;
+        }).join("")}
+      </svg>
+    </div>
+    <div class="r-chart-interaction" aria-live="polite">
+      <span>Select a bar</span>
+      <strong>Details appear here</strong>
+    </div>`;
+
+  const interaction = el.querySelector(".r-chart-interaction");
+  el.querySelectorAll(".r-bar-group").forEach((group) => {
+    const select = () => {
+      el.querySelectorAll(".r-bar-group.is-selected").forEach((g) => g.classList.remove("is-selected"));
+      group.classList.add("is-selected");
+      const label = group.dataset.chartLabel || "";
+      const value = group.dataset.chartValue || "";
+      const sub = group.dataset.chartSub || "";
+      interaction.innerHTML = `<span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong>${sub ? `<em>${escapeHtml(sub)}</em>` : ""}`;
+    };
+    group.addEventListener("click", select);
+    group.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        select();
+      }
+    });
+  });
+}
+
+function renderDonut(elementId, groups, options = {}) {
+  const el = chartHost(elementId);
+  if (!el) return;
+  if (!groups.length) {
+    chartEmpty(el);
+    return;
+  }
+
+  const total = groups.reduce((sum, g) => sum + Math.max(0, Number(g.value) || 0), 0);
+  if (!total) {
+    chartEmpty(el);
+    return;
+  }
+
+  const stops = [];
+  let cursor = 0;
+  groups.forEach((g, i) => {
+    const value = Math.max(0, Number(g.value) || 0);
+    const start = (cursor / total) * 360;
+    cursor += value;
+    const end = (cursor / total) * 360;
+    stops.push(`var(--chart-${g.color || ["teal","violet","orange"][i % 3]}) ${start}deg ${end}deg`);
+  });
+
+  const center = options.centerLabel || total;
+  el.innerHTML = `
+    <div class="r-donut-layout">
+      <button type="button" class="r-donut" aria-label="${escapeHtml(options.ariaLabel || "Circular chart")}"
+        style="background:conic-gradient(${stops.join(", ")});">
+        <span class="r-donut__inner">
+          <strong>${escapeHtml(String(center))}</strong>
+          <small>${escapeHtml(options.centerSub || "total")}</small>
+        </span>
+      </button>
+      <div class="r-donut-legend">
+        ${groups.map((g, i) => {
+          const value = Math.max(0, Number(g.value) || 0);
+          const pct = percent(value, total);
+          return `
+            <button type="button" class="r-donut-legend__item" data-index="${i}">
+              <span class="r-donut-legend__dot r-donut-legend__dot--${g.color || ["teal","violet","orange"][i % 3]}"></span>
+              <span class="r-donut-legend__text"><strong>${escapeHtml(g.label)}</strong><small>${escapeHtml(formatChartValue(g, value))} · ${pct}%</small></span>
+            </button>`;
+        }).join("")}
+      </div>
+    </div>
+    <div class="r-chart-interaction" aria-live="polite">
+      <span>Click a segment or label</span>
+      <strong>${escapeHtml(groups[0].label)}</strong>
+      <em>${escapeHtml(formatChartValue(groups[0], Number(groups[0].value) || 0))} · ${percent(Number(groups[0].value) || 0, total)}%</em>
+    </div>`;
+
+  const update = (index) => {
+    const g = groups[index];
     const value = Number(g.value) || 0;
-    const width = Math.max(2, (value / max) * 100);
-    const color = g.color || "teal";
-    const display = options.format ? options.format(value) : `${value}${unit}`;
-    const sub = g.sub ? `<span class="r-analysis-bar__sub">${escapeHtml(g.sub)}</span>` : "";
-    return `
-      <button class="r-analysis-bar" type="button" title="${escapeHtml(`${g.label}: ${display}`)}">
-        <span class="r-analysis-bar__top">
-          <span class="r-analysis-bar__label">${escapeHtml(g.label)}</span>
-          <strong>${escapeHtml(display)}</strong>
-        </span>
-        <span class="r-analysis-bar__track">
-          <span class="r-analysis-bar__fill r-analysis-bar__fill--${color}" style="width:${width}%"></span>
-        </span>
-        ${sub}
-      </button>`;
-  }).join("");
+    el.querySelectorAll(".r-donut-legend__item.is-selected").forEach((x) => x.classList.remove("is-selected"));
+    el.querySelector(`.r-donut-legend__item[data-index="${index}"]`)?.classList.add("is-selected");
+    const interaction = el.querySelector(".r-chart-interaction");
+    interaction.innerHTML = `<span>${escapeHtml(g.label)}</span><strong>${escapeHtml(formatChartValue(g, value))}</strong><em>${percent(value, total)}% of ${total}</em>`;
+  };
+
+  el.querySelectorAll(".r-donut-legend__item").forEach((item) => {
+    item.addEventListener("click", () => update(Number(item.dataset.index)));
+  });
+  el.querySelector(".r-donut")?.addEventListener("click", () => {
+    const selected = el.querySelector(".r-donut-legend__item.is-selected");
+    update(selected ? Number(selected.dataset.index) : 0);
+  });
+}
+
+function formatChartValue(group, value) {
+  if (typeof group.display === "string") return group.display;
+  if (typeof group.format === "function") return group.format(value);
+  return `${value}${group.unit || ""}`;
+}
+
+function renderLine(elementId, groups, options = {}) {
+  const el = chartHost(elementId);
+  if (!el) return;
+  if (!groups.length) {
+    chartEmpty(el);
+    return;
+  }
+
+  const width = 760;
+  const height = 300;
+  const left = 52;
+  const right = 24;
+  const top = 24;
+  const bottom = 52;
+  const plotW = width - left - right;
+  const plotH = height - top - bottom;
+  const max = options.max ?? Math.max(...groups.map((g) => Number(g.value) || 0), 1);
+  const min = options.min ?? 0;
+  const range = Math.max(1, max - min);
+  const points = groups.map((g, i) => {
+    const x = groups.length === 1 ? left + plotW / 2 : left + (i / (groups.length - 1)) * plotW;
+    const value = Number(g.value) || 0;
+    const y = top + plotH - ((value - min) / range) * plotH;
+    return { ...g, x, y, value };
+  });
+  const path = points.map((p, i) => `${i ? "L" : "M"} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(" ");
+
+  el.innerHTML = `
+    <div class="r-svg-chart-wrap">
+      <svg class="r-svg-chart r-svg-line" viewBox="0 0 ${width} ${height}" role="img"
+        aria-label="${escapeHtml(options.ariaLabel || "Line chart")}">
+        <line x1="${left}" y1="${top + plotH}" x2="${left + plotW}" y2="${top + plotH}" class="r-svg-axis"></line>
+        <line x1="${left}" y1="${top}" x2="${left}" y2="${top + plotH}" class="r-svg-axis"></line>
+        <line x1="${left}" y1="${top + plotH / 2}" x2="${left + plotW}" y2="${top + plotH / 2}" class="r-svg-grid"></line>
+        <path d="${path}" class="r-svg-line-path"></path>
+        ${points.map((p, i) => `
+          <g class="r-line-point" tabindex="0" role="button"
+             data-label="${escapeHtml(p.label)}" data-value="${escapeHtml(options.format ? options.format(p.value) : String(p.value))}" data-sub="${escapeHtml(p.sub || "")}">
+            <circle cx="${p.x}" cy="${p.y}" r="6"></circle>
+            <text x="${p.x}" y="${height - 24}" text-anchor="middle" class="r-svg-label">${escapeHtml(p.label)}</text>
+            <title>${escapeHtml(p.label)}: ${escapeHtml(options.format ? options.format(p.value) : String(p.value))}</title>
+          </g>`).join("")}
+      </svg>
+    </div>
+    <div class="r-chart-interaction" aria-live="polite">
+      <span>Select a point</span>
+      <strong>Case timing</strong>
+      <em>${escapeHtml(options.format ? options.format(points[0].value) : String(points[0].value))}</em>
+    </div>`;
+
+  const interaction = el.querySelector(".r-chart-interaction");
+  el.querySelectorAll(".r-line-point").forEach((point) => {
+    const select = () => {
+      el.querySelectorAll(".r-line-point.is-selected").forEach((p) => p.classList.remove("is-selected"));
+      point.classList.add("is-selected");
+      interaction.innerHTML = `<span>${escapeHtml(point.dataset.label || "")}</span><strong>${escapeHtml(point.dataset.value || "")}</strong>${point.dataset.sub ? `<em>${escapeHtml(point.dataset.sub)}</em>` : ""}`;
+    };
+    point.addEventListener("click", select);
+    point.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        select();
+      }
+    });
+  });
 }
 
 function renderArmChart(participants) {
@@ -214,7 +406,7 @@ function renderArmChart(participants) {
     color: ARM_COLORS[g.key],
     sub: `${percent(g.count, participants.length)}% of filtered participants`,
   }));
-  renderBars("arm-chart", groups);
+  renderDonut("arm-chart", groups, { centerSub: "participants", ariaLabel: "Participants by study condition" });
   $("arm-total-caption").textContent = `${participants.length} participant${participants.length === 1 ? "" : "s"}`;
 }
 
@@ -241,7 +433,7 @@ function renderCompletionChart(participants) {
       sub: `${complete}/${rows.length} complete`,
     };
   });
-  renderBars("completion-chart", groups, { unit: "%" });
+  renderBars("completion-chart", groups, { unit: "%", max: 100 });
 }
 
 function renderConfidenceChart(participants) {
@@ -260,6 +452,7 @@ function renderConfidenceChart(participants) {
 
   renderBars("confidence-chart", groups, {
     format: (v) => `${v.toFixed(2)} / 5`,
+    max: 5,
   });
 }
 
@@ -318,15 +511,15 @@ function renderAiCharts(participants) {
     ? `<strong>${percent(m.matched, aiTotal)}%</strong><span>${m.matched} of ${aiTotal} final answers matched the shown AI suggestion.</span>`
     : `<strong>—</strong><span>No AI-exposed responses in the current filter.</span>`;
 
-  renderBars("ai-change-chart", [
+  renderDonut("ai-change-chart", [
     { label: "Changed", value: percent(m.changed, aiTotal), color: "orange", sub: `${m.changed} responses` },
     { label: "Not changed", value: percent(m.unchanged, aiTotal), color: "teal", sub: `${m.unchanged} responses` },
-  ], { unit: "%" });
+  ], { centerSub: "AI responses", ariaLabel: "Response changes after AI" });
 
-  renderBars("ai-match-chart", [
+  renderDonut("ai-match-chart", [
     { label: "Matched AI", value: percent(m.matched, aiTotal), color: "violet", sub: `${m.matched} responses` },
     { label: "Did not match", value: percent(m.notMatched, aiTotal), color: "teal", sub: `${m.notMatched} responses` },
-  ], { unit: "%" });
+  ], { centerSub: "AI responses", ariaLabel: "Final answers compared with AI suggestions" });
 }
 
 function responseTimingForCase(participants, questionIndex) {
@@ -344,7 +537,7 @@ function renderCaseTimeChart(participants) {
     color: ["teal", "violet", "orange"][i % 3],
     sub: q.id,
   })).filter((g) => g.value > 0);
-  renderBars("case-time-chart", groups, { format: (v) => formatDuration(v) });
+  renderLine("case-time-chart", groups, { format: (v) => formatDuration(v), ariaLabel: "Median time spent on each case" });
 }
 
 function renderCoverageChart(participants) {
@@ -357,7 +550,7 @@ function renderCoverageChart(participants) {
       sub: `${completed}/${participants.length} completed`,
     };
   });
-  renderBars("coverage-chart", groups, { unit: "%" });
+  renderBars("coverage-chart", groups, { unit: "%", max: 100 });
 }
 
 function renderVerifyChart(participants) {
@@ -378,7 +571,7 @@ function renderVerifyChart(participants) {
     };
   });
 
-  renderBars("verify-chart", groups, { unit: "%" });
+  renderBars("verify-chart", groups, { unit: "%", max: 100 });
 }
 
 function renderAll() {
