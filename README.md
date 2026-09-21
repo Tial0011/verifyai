@@ -282,6 +282,18 @@ depends only on which arms are present, never on whether an individual
 left a field blank, so two exports of the same selection are always
 identical. See the header comment in `js/researcher/csv.js`.
 
+**Researcher-chosen fields.** Every exportable field is declared once in
+the catalogue at the top of `js/researcher/csv.js`; both exports and the
+export page's "Choose fields" picker are generated from it, so adding a
+field to the study means adding one entry there. Researchers can switch
+off any field they don't want in the file — identifier fields
+(`participant_id`, and `question_number` in the response-level dataset)
+are locked, because a file without them can't be matched back to a
+participant. Selections are stored as *exclusions* in the researcher's
+own browser, so a field added to the study later appears in exports by
+default rather than being silently missing from a saved inclusion list.
+Deselecting a field never reorders the remaining columns.
+
 **Session duration.** `js/utils/duration.js` records three durations
 rather than one — `totalSeconds` (entry form → submit), `assessmentSeconds`
 (first question → last question) and `activeSeconds` (sum of per-question

@@ -199,17 +199,167 @@ function durationColumns(participant) {
   };
 }
 
-const DURATION_HEADERS = [
-  "entered_at",
-  "assessment_started_at",
-  "assessment_completed_at",
-  "total_duration_seconds",
-  "total_duration_minutes",
-  "total_duration_display",
-  "assessment_duration_seconds",
-  "assessment_duration_minutes",
-  "active_question_time_seconds",
+/* --------------------------------------------------------------------
+   The field catalogue — what a researcher can choose to export
+   --------------------------------------------------------------------
+
+   Every exportable field is declared once, here, and both exports plus
+   the export page's field picker are generated from it. Adding a field
+   to the study means adding one entry below; the picker, the header row
+   and the column counts all follow automatically.
+
+   Each entry carries:
+     key       the column name (and, for per-question fields, the suffix
+               after the q1_ … q8_ prefix)
+     label     how the field is named to the researcher in the picker
+     section   the picker heading it appears under
+     group     "core" | "ai" | "verify" — which arms can populate it.
+               "ai"/"verify" fields are hidden when no participant in the
+               selection is in that arm (see columnPlan).
+     locked    true for fields that cannot be deselected, because a file
+               without them can't be matched back to a participant.
+
+   ORDER MATTERS: the arrays below are the column order of the exported
+   files. Deselecting fields never reorders the remaining ones.
+   -------------------------------------------------------------------- */
+
+/** Fields with one value per participant — the Participant Summary's
+ * leading columns. */
+export const SUMMARY_PARTICIPANT_FIELDS = [
+  { key: "participant_id", label: "Participant ID", section: "Identification", group: "core", locked: true },
+  { key: "university", label: "University", section: "Identification", group: "core" },
+  { key: "study_condition", label: "Study condition", section: "Identification", group: "core" },
+  { key: "submission_date", label: "Submission date", section: "Submission", group: "core" },
+  { key: "submission_timestamp", label: "Submission timestamp", section: "Submission", group: "core" },
+  { key: "completion_status", label: "Completion status", section: "Submission", group: "core" },
+  { key: "entered_at", label: "Entered study at", section: "Session timing", group: "core" },
+  { key: "assessment_started_at", label: "Assessment started at", section: "Session timing", group: "core" },
+  { key: "assessment_completed_at", label: "Assessment completed at", section: "Session timing", group: "core" },
+  { key: "total_duration_seconds", label: "Total time (seconds)", section: "Session timing", group: "core" },
+  { key: "total_duration_minutes", label: "Total time (minutes)", section: "Session timing", group: "core" },
+  { key: "total_duration_display", label: "Total time (readable, e.g. 6m 12s)", section: "Session timing", group: "core" },
+  { key: "assessment_duration_seconds", label: "Assessment time (seconds)", section: "Session timing", group: "core" },
+  { key: "assessment_duration_minutes", label: "Assessment time (minutes)", section: "Session timing", group: "core" },
+  { key: "active_question_time_seconds", label: "Active time on questions (seconds)", section: "Session timing", group: "core" },
 ];
+
+/** Fields with one value per question. In the Participant Summary each
+ * becomes eight columns (q1_… to q8_…); in the Response-Level dataset
+ * each is a single column, since a row IS one question. Shared between
+ * the two exports so the picker means the same thing in both. */
+export const QUESTION_FIELDS = [
+  { key: "initial_response", label: "Initial response (before AI shown)", section: "Responses", group: "ai" },
+  { key: "final_response", label: "Final response", section: "Responses", group: "core" },
+  { key: "answer_changed", label: "Answer changed after AI", section: "Responses", group: "ai" },
+  { key: "confidence", label: "Confidence (1–5)", section: "Responses", group: "core" },
+  { key: "started_at", label: "Question started at", section: "Question timing", group: "core" },
+  { key: "answered_at", label: "Answer selected at", section: "Question timing", group: "core" },
+  { key: "completed_at", label: "Question completed at", section: "Question timing", group: "core" },
+  { key: "time_to_initial_answer_seconds", label: "Time to initial answer (seconds)", section: "Question timing", group: "ai" },
+  { key: "total_question_time_seconds", label: "Total question time (seconds)", section: "Question timing", group: "core" },
+  { key: "ai_shown", label: "AI suggestion shown", section: "AI", group: "ai" },
+  { key: "ai_suggestion", label: "AI suggestion", section: "AI", group: "ai" },
+  { key: "answer_matches_ai", label: "Final answer matches AI", section: "AI", group: "ai" },
+  // One entry per VERIFY-AI step, in the order the participant completes
+  // them. Two of the six steps ask for a free-text note as well; that
+  // note column sits immediately after its own step rather than being
+  // grouped at the end, which is both the existing column order and the
+  // order a researcher reads them in.
+  ...VERIFY_STEPS.flatMap((step) => {
+    const field = {
+      key: `verify_${verifyColumnSuffix(step.key)}`,
+      label: `${step.letter} — ${step.name}`,
+      section: "VERIFY-AI",
+      group: "verify",
+    };
+    if (!step.note) return [field];
+    return [
+      field,
+      {
+        key: `verify_${verifyColumnSuffix(step.key)}_note`,
+        label: `${step.letter} — ${step.name} (free-text note)`,
+        section: "VERIFY-AI",
+        group: "verify",
+        // The summary export has never carried the free-text notes —
+        // eight of them per participant would swamp the row, and they
+        // are read one at a time anyway.
+        responseLevelOnly: true,
+      },
+    ];
+  }),
+];
+
+/** Participant-level fields carried on every Response-Level row. */
+export const RESPONSE_PARTICIPANT_FIELDS = [
+  { key: "participant_id", label: "Participant ID", section: "Identification", group: "core", locked: true },
+  { key: "university", label: "University", section: "Identification", group: "core" },
+  { key: "study_condition", label: "Study condition", section: "Identification", group: "core" },
+  // Carried on every row so a per-response model can control for how
+  // long the participant took overall without a join back to the
+  // summary file.
+  { key: "participant_total_duration_seconds", label: "Participant total time (seconds)", section: "Session timing", group: "core" },
+  { key: "participant_assessment_duration_seconds", label: "Participant assessment time (seconds)", section: "Session timing", group: "core" },
+  { key: "question_number", label: "Question number", section: "Question identification", group: "core", locked: true },
+  { key: "question_id", label: "Question ID", section: "Question identification", group: "core" },
+  { key: "scenario_id", label: "Scenario ID", section: "Question identification", group: "core" },
+];
+
+/**
+ * Whether a field's arm group is populated by the current selection.
+ * A locked field is always kept — the file has to stay identifiable.
+ */
+function fieldApplies(field, plan) {
+  if (field.group === "ai") return plan.includeAi;
+  if (field.group === "verify") return plan.includeVerify;
+  return true;
+}
+
+/** Whether the researcher has switched this field off in the picker. */
+function fieldExcluded(field, excluded) {
+  return !field.locked && excluded.has(field.key);
+}
+
+function includedFields(fields, plan, excluded) {
+  return fields.filter((f) => fieldApplies(f, plan) && !fieldExcluded(f, excluded));
+}
+
+/** Normalizes the excludedFields option into a Set. */
+function excludedSet(options) {
+  return new Set(Array.isArray(options.excludedFields) ? options.excludedFields : []);
+}
+
+/**
+ * The full picker model for one export: its sections, each field, and
+ * whether that field is currently applicable and currently selected.
+ * The export page renders straight from this, so what the researcher
+ * sees can never drift from what the builders produce.
+ *
+ * @param {"summary"|"responseLevel"} kind
+ */
+export function fieldCatalogue(kind, plan, options = {}) {
+  const excluded = excludedSet(options);
+  const fields =
+    kind === "responseLevel"
+      ? [...RESPONSE_PARTICIPANT_FIELDS, ...QUESTION_FIELDS]
+      : [
+          ...SUMMARY_PARTICIPANT_FIELDS,
+          ...QUESTION_FIELDS.filter((f) => !f.responseLevelOnly),
+        ];
+
+  const sections = new Map();
+  fields.forEach((field) => {
+    if (!fieldApplies(field, plan)) return; // not populated by this selection
+    if (!sections.has(field.section)) sections.set(field.section, []);
+    sections.get(field.section).push({
+      ...field,
+      selected: !fieldExcluded(field, excluded),
+      // Per-question fields become 8 columns each in the summary export.
+      columnsEach: kind === "summary" && QUESTION_FIELDS.includes(field) ? TOTAL_QUESTIONS : 1,
+    });
+  });
+
+  return Array.from(sections.entries()).map(([title, items]) => ({ title, fields: items }));
+}
 
 /* --------------------------------------------------------------------
    Export 1 — Participant Summary (one participant per row)
@@ -221,35 +371,19 @@ const DURATION_HEADERS = [
  * column count and preview before the download, using the exact same
  * logic that produces the file.
  */
-export function summaryHeaders(plan) {
-  const headers = [
-    "participant_id",
-    "university",
-    "study_condition",
-    "submission_date",
-    "submission_timestamp",
-    "completion_status",
-    ...DURATION_HEADERS,
-  ];
+export function summaryHeaders(plan, options = {}) {
+  const excluded = excludedSet(options);
+
+  const headers = includedFields(SUMMARY_PARTICIPANT_FIELDS, plan, excluded).map((f) => f.key);
+
+  const perQuestion = includedFields(
+    QUESTION_FIELDS.filter((f) => !f.responseLevelOnly),
+    plan,
+    excluded
+  );
 
   for (let i = 1; i <= TOTAL_QUESTIONS; i += 1) {
-    if (plan.includeAi) headers.push(`q${i}_initial_response`);
-    headers.push(`q${i}_final_response`);
-    if (plan.includeAi) headers.push(`q${i}_answer_changed`);
-    headers.push(`q${i}_confidence`, `q${i}_started_at`, `q${i}_answered_at`, `q${i}_completed_at`);
-    // Identical to total_question_time in a No-AI-only export (see the
-    // file header), so it travels with the AI group.
-    if (plan.includeAi) headers.push(`q${i}_time_to_initial_answer_seconds`);
-    headers.push(`q${i}_total_question_time_seconds`);
-
-    if (plan.includeAi) {
-      headers.push(`q${i}_ai_shown`, `q${i}_ai_suggestion`, `q${i}_answer_matches_ai`);
-    }
-    if (plan.includeVerify) {
-      VERIFY_STEPS.forEach((step) => {
-        headers.push(`q${i}_verify_${verifyColumnSuffix(step.key)}`);
-      });
-    }
+    perQuestion.forEach((field) => headers.push(`q${i}_${field.key}`));
   }
 
   return headers;
@@ -257,7 +391,7 @@ export function summaryHeaders(plan) {
 
 export function buildSummaryCsv(participants, options = {}) {
   const plan = columnPlan(participants, options);
-  const headers = summaryHeaders(plan);
+  const headers = summaryHeaders(plan, options);
 
   const rows = participants.map((p) => {
     const row = {
@@ -311,47 +445,17 @@ export function buildSummaryCsv(participants, options = {}) {
    -------------------------------------------------------------------- */
 
 /** The Response-Level header row for a given column plan. */
-export function responseLevelHeaders(plan) {
+export function responseLevelHeaders(plan, options = {}) {
+  const excluded = excludedSet(options);
   return [
-    "participant_id",
-    "university",
-    "study_condition",
-    // Carried on every row so a per-response model can control for how
-    // long the participant took overall without a separate join back to
-    // the summary file.
-    "participant_total_duration_seconds",
-    "participant_assessment_duration_seconds",
-    "question_number",
-    "question_id",
-    "scenario_id",
-    ...(plan.includeAi ? ["initial_response"] : []),
-    "final_response",
-    ...(plan.includeAi ? ["answer_changed"] : []),
-    "confidence",
-    "started_at",
-    "answered_at",
-    "completed_at",
-    ...(plan.includeAi ? ["time_to_initial_answer_seconds"] : []),
-    "total_question_time_seconds",
-    ...(plan.includeAi ? ["ai_shown", "ai_suggestion", "answer_matches_ai"] : []),
-    ...(plan.includeVerify
-      ? [
-          "verify_validate",
-          "verify_examine",
-          "verify_review",
-          "verify_review_note",
-          "verify_independently_compare",
-          "verify_flag",
-          "verify_flag_note",
-          "verify_yield",
-        ]
-      : []),
+    ...includedFields(RESPONSE_PARTICIPANT_FIELDS, plan, excluded).map((f) => f.key),
+    ...includedFields(QUESTION_FIELDS, plan, excluded).map((f) => f.key),
   ];
 }
 
 export function buildResponseLevelCsv(participants, options = {}) {
   const plan = columnPlan(participants, options);
-  const headers = responseLevelHeaders(plan);
+  const headers = responseLevelHeaders(plan, options);
 
   const rows = [];
 
@@ -417,8 +521,9 @@ export function describeExport(participants, options = {}) {
   const plan = columnPlan(participants, options);
   return {
     ...plan,
-    summaryColumns: summaryHeaders(plan).length,
-    responseLevelColumns: responseLevelHeaders(plan).length,
+    summaryColumns: summaryHeaders(plan, options).length,
+    responseLevelColumns: responseLevelHeaders(plan, options).length,
+    excludedFields: Array.isArray(options.excludedFields) ? options.excludedFields.length : 0,
   };
 }
 

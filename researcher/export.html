@@ -89,6 +89,38 @@
           </div>
         </section>
 
+        <!-- Field picker. Populated by js/researcher/export.js from the
+             catalogue in js/researcher/csv.js, so the fields offered
+             here are always exactly the fields the builders can emit. -->
+        <section class="r-panel">
+          <div class="r-panel__head">
+            <h2 class="r-panel__title">Choose fields</h2>
+            <p class="r-panel__subtitle">
+              Switch off any field you don't want in the file. Identifier
+              fields can't be removed, and your selection is remembered on
+              this device.
+            </p>
+          </div>
+          <div class="r-panel__body">
+            <div class="r-tabs" role="tablist" aria-label="Which export to choose fields for">
+              <button class="r-tab" type="button" role="tab" data-kind="summary" aria-selected="true">
+                Participant summary
+              </button>
+              <button class="r-tab" type="button" role="tab" data-kind="responseLevel" aria-selected="false">
+                Response-level
+              </button>
+            </div>
+
+            <div class="r-field-actions">
+              <button class="r-retry-btn" type="button" id="select-all-fields">Select all</button>
+              <button class="r-retry-btn" type="button" id="clear-all-fields">Clear all</button>
+              <button class="r-retry-btn" type="button" id="reset-fields">Reset to default</button>
+            </div>
+
+            <div id="field-picker"></div>
+          </div>
+        </section>
+
         <div class="r-export-grid">
           <div class="r-export-card">
             <h3 class="r-export-card__title">Participant summary</h3>
