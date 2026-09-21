@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analysis — VERIFY-AI Researcher</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/researcher.css" />
+  <link rel="stylesheet" href="../css/researcher-analysis.css" />
+</head>
+<body class="r-body">
+  <div class="r-shell">
+    <aside class="r-sidebar">
+      <a class="r-sidebar__brand" href="dashboard.html">
+        <span class="brand__mark" aria-hidden="true">V</span>
+        <span class="r-sidebar__brand-text">VERIFY-AI<span class="r-sidebar__brand-sub">Researcher</span></span>
+      </a>
+
+      <ul class="r-nav">
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="participants.html">Participants</a></li>
+        <li><a href="analysis.html" aria-current="page">Analysis</a></li>
+        <li><a href="export.html">Export</a></li>
+      </ul>
+
+      <div class="r-sidebar__footer">
+        <p class="r-sidebar__user" id="researcher-email"></p>
+        <button class="r-logout" id="logout-btn" type="button">Log out</button>
+      </div>
+    </aside>
+
+    <main class="r-main">
+      <div class="r-analysis-hero">
+        <div>
+          <p class="r-analysis-eyebrow">Research analysis</p>
+          <h1 class="r-topbar__title">Analysis dashboard</h1>
+          <p class="r-topbar__subtitle">
+            A simple descriptive view of the live VERIFY-AI dataset.
+          </p>
+        </div>
+        <div class="r-analysis-live">
+          <span class="r-live-pill" id="analysis-live-pill" data-state="ok">
+            <span class="r-live-dot" aria-hidden="true"></span>
+            <span id="analysis-live-label">Live</span>
+          </span>
+          <span class="r-analysis-updated" id="analysis-updated">Waiting for data…</span>
+        </div>
+      </div>
+
+      <div class="r-analysis-note">
+        <strong>Descriptive analysis only.</strong>
+        These cards and charts summarize the submitted data. They do not calculate
+        statistical significance or make causal/effectiveness claims.
+      </div>
+
+      <div class="r-analysis-filters r-panel">
+        <div>
+          <label for="filter-university">University</label>
+          <select id="filter-university" class="r-select">
+            <option value="all">All universities</option>
+          </select>
+        </div>
+        <div>
+          <label for="filter-arm">Study condition</label>
+          <select id="filter-arm" class="r-select">
+            <option value="all">All conditions</option>
+          </select>
+        </div>
+        <div class="r-analysis-filter-meta">
+          <span id="filter-count">0 participants</span>
+          <button class="r-analysis-reset" id="reset-filters" type="button">Reset filters</button>
+        </div>
+      </div>
+
+      <div class="r-loading" id="loading-state">
+        <span class="r-spinner" aria-hidden="true"></span>
+        <span>Loading analysis data…</span>
+      </div>
+
+      <div id="analysis-content" hidden>
+        <section class="r-analysis-kpis" id="analysis-kpis"></section>
+
+        <div class="r-analysis-grid r-analysis-grid--wide">
+          <section class="r-panel r-analysis-card">
+            <div class="r-panel__head">
+              <div>
+                <p class="r-analysis-card__eyebrow">Study composition</p>
+                <h2 class="r-panel__title">Participants by study condition</h2>
+              </div>
+              <span class="r-chart-caption" id="arm-total-caption"></span>
+            </div>
+            <div class="r-analysis-chart" id="arm-chart"></div>
+          </section>
+
+          <section class="r-panel r-analysis-card">
+            <div class="r-panel__head">
+              <div>
+                <p class="r-analysis-card__eyebrow">Site balance</p>
+                <h2 class="r-panel__title">Participants by university</h2>
+              </div>
+            </div>
+            <div class="r-analysis-chart" id="university-chart"></div>
+          </section>
+        </div>
+
+        <div class="r-analysis-grid">
+          <section class="r-panel r-analysis-card">
+            <div class="r-panel__head">
+              <div>
+                <p class="r-analysis-card__eyebrow">Completion</p>
+                <h2 class="r-panel__title">Completion by condition</h2>
+              </div>
+            </div>
+            <div class="r-analysis-chart" id="completion-chart"></div>
+            <p class="r-chart-footnote">Completed = all recorded study questions completed.</p>
+          </section>
+
+          <section class="r-panel r-analysis-card">
+            <div class="r-panel__head">
+              <div>
+                <p class="r-analysis-card__eyebrow">Confidence</p>
+                <h2 class="r-panel__title">Average confidence by condition</h2>
+              </div>
+              <span class="r-chart-caption">Scale: 1–5</span>
+            </div>
+            <div class="r-analysis-chart" id="confidence-chart"></div>
+            <p class="r-chart-footnote">Calculated from recorded question-level confidence ratings.</p>
+          </section>
+        </div>
+
+        <section class="r-panel r-analysis-card">
+          <div class="r-panel__head r-analysis-card__head--controls">
+            <div>
+              <p class="r-analysis-card__eyebrow">Timing</p>
+              <h2 class="r-panel__title">How long are participants taking?</h2>
+            </div>
+            <div class="r-segmented" role="group" aria-label="Timing metric">
+              <button type="button" class="is-active" data-time-metric="assessment">Assessment time</button>
+              <button type="button" data-time-metric="active">Active question time</button>
+              <button type="button" data-time-metric="total">Total session</button>
+            </div>
+          </div>
+          <div class="r-analysis-chart r-analysis-chart--timing" id="timing-chart"></div>
+          <p class="r-chart-footnote" id="timing-footnote"></p>
+        </section>
+
+        <div class="r-analysis-grid">
+          <section class="r-panel r-analysis-card">
+            <div class="r-panel__head">
+              <div>
+                <p class="r-analysis-card__eyebrow">AI interaction</p>
+                <h2 class="r-panel__title">Response changes after AI</h2>
+              </div>
+              <span class="r-chart-caption">AI arms only</span>
+            </div>
+            <div class="r-ai-summary" id="ai-change-summary"></div>
+            <div class="r-analysis-chart" id="ai-change-chart"></div>
+          </section>
+
+          <section class="r-panel r-analysis-card">
+            <div class="r-panel__head">
+              <div>
+                <p class="r-analysis-card__eyebrow">AI interaction</p>
+                <h2 class="r-panel__title">Final answer vs AI suggestion</h2>
+              </div>
+              <span class="r-chart-caption">AI arms only</span>
+            </div>
+            <div class="r-ai-summary" id="ai-match-summary"></div>
+            <div class="r-analysis-chart" id="ai-match-chart"></div>
+          </section>
+        </div>
+
+        <section class="r-panel r-analysis-card">
+          <div class="r-panel__head">
+            <div>
+              <p class="r-analysis-card__eyebrow">Case-level view</p>
+              <h2 class="r-panel__title">Median time spent on each case</h2>
+            </div>
+            <span class="r-chart-caption">All filtered participants</span>
+          </div>
+          <div class="r-analysis-chart r-analysis-chart--case" id="case-time-chart"></div>
+          <p class="r-chart-footnote">Only responses with usable start and completion timestamps are included.</p>
+        </section>
+
+        <div class="r-analysis-grid">
+          <section class="r-panel r-analysis-card">
+            <div class="r-panel__head">
+              <div>
+                <p class="r-analysis-card__eyebrow">VERIFY-AI arm</p>
+                <h2 class="r-panel__title">Verification step completion</h2>
+              </div>
+              <span class="r-chart-caption">AI + VERIFY-AI only</span>
+            </div>
+            <div class="r-analysis-chart" id="verify-chart"></div>
+            <p class="r-chart-footnote">Shows the share of recorded VERIFY-AI responses containing a value for each step.</p>
+          </section>
+
+          <section class="r-panel r-analysis-card">
+            <div class="r-panel__head">
+              <div>
+                <p class="r-analysis-card__eyebrow">Data quality</p>
+                <h2 class="r-panel__title">Question coverage</h2>
+              </div>
+            </div>
+            <div class="r-analysis-chart r-analysis-chart--case" id="coverage-chart"></div>
+            <p class="r-chart-footnote">Percentage of filtered participants with a completed response for each question.</p>
+          </section>
+        </div>
+      </div>
+
+      <div class="r-analysis-empty" id="analysis-empty" hidden>
+        <div class="r-analysis-empty__icon">∅</div>
+        <h2>No data matches these filters</h2>
+        <p>Try another university or study condition.</p>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="../js/researcher/analysis.js"></script>
+</body>
+</html>
