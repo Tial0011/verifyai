@@ -14,7 +14,8 @@
   --color-warn-bg: #faf1e3;
   --color-bad: #9c3b3b;
   --color-bad-bg: #f8ecec;
-  --shadow-card: 0 1px 2px rgba(18, 33, 63, 0.04), 0 6px 20px -8px rgba(18, 33, 63, 0.08);
+  --shadow-card:
+    0 1px 2px rgba(18, 33, 63, 0.04), 0 6px 20px -8px rgba(18, 33, 63, 0.08);
 }
 
 .r-body {
@@ -184,7 +185,9 @@
   color: #cfd6e6;
   text-decoration: none;
   font-size: 0.92rem;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .r-nav a:hover {
@@ -227,7 +230,9 @@
   padding: 0.55rem 0.75rem;
   font-size: 0.88rem;
   cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .r-logout:hover {
@@ -286,12 +291,19 @@
 }
 
 @keyframes r-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .r-live-dot { animation: none; }
+  .r-live-dot {
+    animation: none;
+  }
 }
 
 /* Mobile: collapse sidebar to a compact, pinned top bar ---------------
@@ -383,7 +395,9 @@
   border-radius: var(--radius-md);
   padding: 1.15rem 1.25rem;
   box-shadow: var(--shadow-card);
-  transition: box-shadow 0.4s ease, border-color 0.4s ease;
+  transition:
+    box-shadow 0.4s ease,
+    border-color 0.4s ease;
 }
 
 .r-kpi-card[data-flash="true"] {
@@ -537,8 +551,12 @@
 }
 
 @keyframes r-feed-in {
-  0% { background: var(--color-accent-ink); }
-  100% { background: transparent; }
+  0% {
+    background: var(--color-accent-ink);
+  }
+  100% {
+    background: transparent;
+  }
 }
 
 .r-feed__main {
@@ -603,7 +621,9 @@
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  animation: r-toast-in 0.25s ease, r-toast-out 0.3s ease 3.7s forwards;
+  animation:
+    r-toast-in 0.25s ease,
+    r-toast-out 0.3s ease 3.7s forwards;
   max-width: 300px;
 }
 
@@ -616,12 +636,21 @@
 }
 
 @keyframes r-toast-in {
-  from { transform: translateY(8px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes r-toast-out {
-  to { transform: translateY(8px); opacity: 0; }
+  to {
+    transform: translateY(8px);
+    opacity: 0;
+  }
 }
 
 /* ---------------------------------------------------------------------
@@ -805,19 +834,30 @@
 }
 
 @keyframes r-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .r-skel {
-  background: linear-gradient(90deg, var(--color-bg) 25%, #eceee9 37%, var(--color-bg) 63%);
+  background: linear-gradient(
+    90deg,
+    var(--color-bg) 25%,
+    #eceee9 37%,
+    var(--color-bg) 63%
+  );
   background-size: 400% 100%;
   animation: r-shimmer 1.4s ease infinite;
   border-radius: var(--radius-sm);
 }
 
 @keyframes r-shimmer {
-  0% { background-position: 100% 50%; }
-  100% { background-position: 0 50%; }
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
 }
 
 /* ---------------------------------------------------------------------
@@ -1024,4 +1064,27 @@
   font-size: 0.85rem;
   color: var(--color-ink-faint);
   margin-top: 0.75rem;
+}
+.r-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.9rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.r-retry-btn:hover {
+  background: var(--color-bg);
+  border-color: var(--color-ink);
 }
