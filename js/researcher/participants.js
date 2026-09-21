@@ -10,7 +10,14 @@ import { requireResearcher, initLogout } from "./guard.js";
 import { subscribeToParticipants } from "./store.js";
 import { markLoaded, startSlowLoadHint, showLoadError } from "./ui.js";
 import { INSTITUTION_LABELS, ARM_LABELS } from "../participant/study-arm.js";
-import { armLabel, escapeHtml, formatDateTime, completionStatus } from "./format.js";
+import {
+  armLabel,
+  escapeHtml,
+  formatDateTime,
+  completionStatus,
+  deriveDurations,
+  formatDuration,
+} from "./format.js";
 
 let allParticipants = [];
 let unsubscribe = null;
@@ -52,12 +59,17 @@ function rowHtml(p) {
   const status = completionStatus(p);
   const university = INSTITUTION_LABELS[p.university] || p.university || "Unknown";
   const submitted = (p.timestamps && p.timestamps.submittedAt) || p.createdAt;
+  // End-to-end session time (entry form -> final submit). Derived from
+  // the raw timestamps for records written before durations were stored;
+  // see js/utils/duration.js.
+  const { totalSeconds } = deriveDurations(p);
   return `
     <tr>
       <td class="r-td-id">${escapeHtml(p.participantId || p.id)}</td>
       <td>${escapeHtml(university)}</td>
       <td>${escapeHtml(armLabel(p.studyCondition))}</td>
       <td>${escapeHtml(formatDateTime(submitted))}</td>
+      <td>${escapeHtml(formatDuration(totalSeconds))}</td>
       <td>${statusBadgeHtml(status)}</td>
       <td><a class="r-view-link" href="participant-details.html?id=${encodeURIComponent(p.id)}">View</a></td>
     </tr>`;

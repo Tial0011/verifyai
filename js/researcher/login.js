@@ -19,6 +19,7 @@ import {
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import { auth, db } from "../firebase/config.js";
 import { clearLoggedOutFlag } from "./guard.js";
+import { setButtonLoading, isOffline } from "../utils/loading.js";
 
 function showError(message) {
   const el = document.getElementById("auth-error");
@@ -41,6 +42,8 @@ function friendlyAuthError(err) {
       return "Incorrect email or password.";
     case "auth/too-many-requests":
       return "Too many attempts. Please wait a moment and try again.";
+    case "auth/network-request-failed":
+      return "We couldn't reach the authentication service. Check your connection and try again.";
     default:
       return "We couldn't sign you in. Please try again.";
   }
@@ -91,8 +94,14 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    loginBtn.disabled = true;
-    loginBtn.textContent = "Signing in…";
+    if (isOffline()) {
+      showError("You appear to be offline. Check your connection and try again.");
+      return;
+    }
+
+    // Sign-in is two round trips (Firebase Auth, then the /researchers
+    // allowlist read), so on a poor connection this is a real wait.
+    setButtonLoading(loginBtn, true, "Signing in…");
 
     try {
       const credential = await signInWithEmailAndPassword(auth, email, password);
@@ -106,8 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       showError(friendlyAuthError(err));
     } finally {
-      loginBtn.disabled = false;
-      loginBtn.textContent = "Log in";
+      setButtonLoading(loginBtn, false);
     }
   });
 });

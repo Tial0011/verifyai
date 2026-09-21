@@ -68,6 +68,29 @@ export const INSTITUTION_LABELS = {
   "babcock-university-ilishan-remo": "Babcock University, Ilishan-Remo",
 };
 
+/**
+ * Older/parallel spellings of the same three arms that may exist in
+ * stored records. js/firebase/participants.js, for instance, writes the
+ * VERIFY arm as "verify_ai" rather than "ai_verify_ai". Mapping them
+ * here means a single participant document written under either spelling
+ * still resolves to the right condition everywhere — including in the
+ * researcher exports, which decide which columns apply by looking at the
+ * arms present in the data.
+ */
+const ARM_ALIASES = {
+  verify_ai: ARMS.VERIFY_AI,
+  noai: ARMS.NO_AI,
+  "no-ai": ARMS.NO_AI,
+  standardai: ARMS.STANDARD_AI,
+};
+
+/** Canonical ARMS value for an arm string, or null if unrecognised. */
+export function normalizeArm(arm) {
+  if (!arm) return null;
+  if (Object.values(ARMS).includes(arm)) return arm;
+  return ARM_ALIASES[arm] || null;
+}
+
 /** True if the given arm value is one of the three defined arms. */
 export function isValidArm(arm) {
   return Object.values(ARMS).includes(arm);
@@ -95,10 +118,11 @@ export function resolveArm(draft) {
 
 /** Whether this arm sees the locked AI suggestion. */
 export function armShowsAi(arm) {
-  return arm === ARMS.STANDARD_AI || arm === ARMS.VERIFY_AI;
+  const normalized = normalizeArm(arm);
+  return normalized === ARMS.STANDARD_AI || normalized === ARMS.VERIFY_AI;
 }
 
 /** Whether this arm completes the structured VERIFY-AI workflow. */
 export function armShowsVerifyWorkflow(arm) {
-  return arm === ARMS.VERIFY_AI;
+  return normalizeArm(arm) === ARMS.VERIFY_AI;
 }

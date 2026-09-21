@@ -39,6 +39,7 @@
  */
 import { QUESTIONS, TOTAL_QUESTIONS, CONFIDENCE_PROMPT } from "./case-data.js";
 import { getParticipantDraft, getStudyProgress, saveStudyProgress } from "../utils/local-storage.js";
+import { showOverlay, initNetworkBanner } from "../utils/loading.js";
 import { resolveArm, armShowsAi, armShowsVerifyWorkflow, isValidArm } from "./study-arm.js";
 import {
   renderVerifyWorkflow,
@@ -59,9 +60,20 @@ function getProgress(arm) {
   if (stored && Array.isArray(stored.responses)) {
     // Keep the arm the participant started in; never re-assign mid-study.
     if (!isValidArm(stored.studyArm)) stored.studyArm = arm;
+    // Written once, on the first ever render of the assessment (below),
+    // and never touched again — a refresh must not restart the clock.
     return stored;
   }
-  return { currentIndex: 0, studyArm: arm, responses: [] };
+  return {
+    currentIndex: 0,
+    studyArm: arm,
+    // When the participant first reached the assessment. Together with
+    // the last question's submittedAt this gives the assessment duration
+    // (see js/utils/duration.js); the wall-clock total also counts the
+    // entry form and the final submission screen.
+    assessmentStartedAt: new Date().toISOString(),
+    responses: [],
+  };
 }
 
 function renderBlocked(message) {
@@ -337,13 +349,21 @@ function handleSubmit(progress, arm, index) {
     completed: true,
   };
   progress.currentIndex = index + 1;
-  saveStudyProgress(progress);
 
   if (progress.currentIndex >= TOTAL_QUESTIONS) {
+    // The moment the assessment itself ended. Recorded here rather than
+    // derived later so it can't drift if a response is ever missing a
+    // timestamp; duration.js still falls back to deriving it for records
+    // written before this existed.
+    progress.assessmentCompletedAt = new Date().toISOString();
+    saveStudyProgress(progress);
+    showOverlay("Preparing your submission…");
     window.location.href = "complete.html";
-  } else {
-    renderQuestion(progress, arm);
+    return;
   }
+
+  saveStudyProgress(progress);
+  renderQuestion(progress, arm);
 }
 
 function initFooterYear() {
@@ -353,6 +373,11 @@ function initFooterYear() {
 
 document.addEventListener("DOMContentLoaded", () => {
   initFooterYear();
+
+  // A participant who loses signal mid-assessment should find out now,
+  // not at the submit button. Nothing is written to Firestore during the
+  // assessment, so being offline here is harmless — the banner says so.
+  initNetworkBanner();
 
   const draft = getParticipantDraft();
   if (!draft) {
@@ -369,7 +394,21 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const progress = getProgress(arm);
+
+  // A session that was already in progress when timing was introduced has
+  // no assessmentStartedAt. Recover it from the first question's own
+  // startedAt rather than stamping "now", which would under-report the
+  // duration. If there are no responses yet, now IS the start.
+  if (!progress.assessmentStartedAt) {
+    const firstStarted = progress.responses.find((r) => r && r.startedAt);
+    progress.assessmentStartedAt = firstStarted
+      ? firstStarted.startedAt
+      : new Date().toISOString();
+    saveStudyProgress(progress);
+  }
+
   if (progress.currentIndex >= TOTAL_QUESTIONS) {
+    showOverlay("Preparing your submission…");
     window.location.href = "complete.html";
     return;
   }

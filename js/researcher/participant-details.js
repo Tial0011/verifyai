@@ -28,6 +28,8 @@ import {
   answerMomentFor,
   formatSeconds,
   completionStatus,
+  deriveDurations,
+  formatDuration,
 } from "./format.js";
 
 function getIdFromUrl() {
@@ -45,6 +47,13 @@ function val(value) {
 function renderInfoGrid(p) {
   const university = INSTITUTION_LABELS[p.university] || p.university;
   const submitted = (p.timestamps && p.timestamps.submittedAt) || p.createdAt;
+  // Three durations, not one — they answer different questions and can
+  // differ noticeably for the same participant. See js/utils/duration.js
+  // for what separates them; the gap between assessment time and active
+  // question time is a useful data-quality signal (it is the time the
+  // participant spent between questions rather than on one).
+  const { totalSeconds, assessmentSeconds, activeSeconds } = deriveDurations(p);
+
   const rows = [
     ["Participant ID", p.participantId || p.id],
     ["University", university],
@@ -52,6 +61,9 @@ function renderInfoGrid(p) {
     ["Submission date", formatDate(submitted)],
     ["Submission time", formatTime(submitted)],
     ["Completion status", completionStatus(p)],
+    ["Total time taken", formatDuration(totalSeconds)],
+    ["Time on assessment", formatDuration(assessmentSeconds)],
+    ["Active time on questions", formatDuration(activeSeconds)],
   ];
   document.getElementById("participant-info-grid").innerHTML = rows
     .map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${val(value)}</dd></div>`)

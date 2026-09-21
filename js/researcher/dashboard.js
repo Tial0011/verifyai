@@ -11,7 +11,15 @@ import { requireResearcher, initLogout } from "./guard.js";
 import { subscribeToParticipants } from "./store.js";
 import { markLoaded, startSlowLoadHint, showLoadError } from "./ui.js";
 import { INSTITUTION_LABELS } from "../participant/study-arm.js";
-import { armLabel, escapeHtml, formatRelative, completionStatus } from "./format.js";
+import {
+  armLabel,
+  escapeHtml,
+  formatRelative,
+  completionStatus,
+  deriveDurations,
+  formatDuration,
+  median,
+} from "./format.js";
 
 let previousIds = null; // null = first load (don't toast for the initial batch)
 let unsubscribe = null;
@@ -54,9 +62,20 @@ function renderKpis(participants) {
     label: armLabel(c.value),
   }));
 
+  // Median rather than mean: a single participant who left the tab open
+  // over lunch would drag a mean into uselessness, and this figure is
+  // mainly here to answer "roughly how long is this taking people?"
+  // during piloting. Only completed sessions are counted.
+  const medianSeconds = median(
+    participants
+      .filter((p) => completionStatus(p) === "Complete")
+      .map((p) => deriveDurations(p).totalSeconds)
+  );
+
   const cards = [
     { label: "Total participants", value: total },
     { label: "Complete", value: completeCount },
+    { label: "Median time taken", value: medianSeconds === null ? "—" : formatDuration(medianSeconds) },
     ...universityCounts.slice(0, 3).map((u) => ({ label: u.label, value: u.count })),
     ...conditionCounts.slice(0, 3).map((c) => ({ label: c.label, value: c.count })),
   ];

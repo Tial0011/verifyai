@@ -261,6 +261,41 @@ Technical implementation decisions may be made by the developer, but they must n
 Researcher dashboard, participant data views, and CSV export implemented
 (Phase 3).
 
+### Recent additions
+
+**Loading / network states.** `js/utils/loading.js` is the single source
+of loading UI (button spinners, page-transition overlay, slow-operation
+hint, offline banner). The final submission screen has explicit idle /
+busy / offline / failed / success states: a failed submit never clears
+local state, always says so in plain language, and its retry reuses the
+same idempotency key, so retrying cannot create a duplicate record or
+consume a second VA ID.
+
+**Filter-aware exports.** The three arms don't produce the same
+variables, so exporting a No-AI-only selection no longer attaches 8
+questions' worth of structurally-blank AI and VERIFY-AI columns. The
+export page's "Only include columns that apply to this selection"
+option (on by default) drops column groups no participant in the
+selection can populate — 63 columns for a No-AI export vs 159 for an
+unfiltered one. Turning it off always gives the full set. The rule
+depends only on which arms are present, never on whether an individual
+left a field blank, so two exports of the same selection are always
+identical. See the header comment in `js/researcher/csv.js`.
+
+**Session duration.** `js/utils/duration.js` records three durations
+rather than one — `totalSeconds` (entry form → submit), `assessmentSeconds`
+(first question → last question) and `activeSeconds` (sum of per-question
+time, excluding gaps between questions). All three are derivable from the
+raw timestamps, so records written before this change still report timing
+correctly. Shown on the participant's confirmation screen, the
+participants table, the participant detail page, the dashboard (median),
+and both CSV exports.
+
+> **Open item for the research team:** which of the three durations is
+> the primary timing outcome for the protocol. All three are exported
+> rather than one being chosen, since that is a research-design decision.
+
+
 **Stack:** HTML + CSS + JavaScript + Firebase (Firestore + Authentication) + Netlify
 
 **Current scope:** Landing page → participant entry/consent → 8-question

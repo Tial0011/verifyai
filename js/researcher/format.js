@@ -6,20 +6,26 @@
  * csv.js without coupling them to each other.
  */
 import { ARM_LABELS, armShowsAi } from "../participant/study-arm.js";
+import {
+  toDate,
+  secondsBetween,
+  formatDuration,
+  toMinutes,
+  deriveDurations,
+  median,
+} from "../utils/duration.js";
+
+// Timestamp parsing and duration maths are shared with the participant
+// side (complete.js computes the same durations at submission time), so
+// they live in js/utils/duration.js and are re-exported here. Researcher
+// modules can keep importing everything from format.js.
+export { toDate, secondsBetween, formatDuration, toMinutes, deriveDurations, median };
 
 export function escapeHtml(value) {
   return String(value ?? "").replace(
     /[&<>"']/g,
     (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch])
   );
-}
-
-/** Firestore Timestamp | ISO string | null → Date | null. Never throws. */
-export function toDate(value) {
-  if (!value) return null;
-  if (typeof value.toDate === "function") return value.toDate(); // Firestore Timestamp
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? null : d;
 }
 
 const DATE_FMT = new Intl.DateTimeFormat(undefined, {
@@ -69,15 +75,6 @@ export function formatRelative(value) {
   if (diffHr < 24) return `${diffHr} hr${diffHr === 1 ? "" : "s"} ago`;
   const diffDay = Math.round(diffHr / 24);
   return `${diffDay} day${diffDay === 1 ? "" : "s"} ago`;
-}
-
-/** Whole seconds between two timestamp-like values, or null if either is missing. */
-export function secondsBetween(startValue, endValue) {
-  const start = toDate(startValue);
-  const end = toDate(endValue);
-  if (!start || !end) return null;
-  const diff = Math.round((end.getTime() - start.getTime()) / 1000);
-  return diff >= 0 ? diff : null;
 }
 
 /**

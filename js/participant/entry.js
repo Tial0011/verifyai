@@ -38,6 +38,7 @@ import {
   clearStudyProgress,
 } from "../utils/local-storage.js";
 import { armForInstitution } from "./study-arm.js";
+import { showOverlay, initNetworkBanner } from "../utils/loading.js";
 
 const FIELD_DEFS = [
   { wrapperId: "institution-field", kind: "text", controlId: "institution" },
@@ -238,6 +239,13 @@ function initFormSubmit() {
     if (participantData.studyArm) {
       // All three arms run through the same case runner, which renders
       // the condition-appropriate flow.
+      //
+      // Nothing is written to Firestore here, so this is a fast local
+      // hand-off — but the next page still has to be fetched, which on a
+      // poor connection is exactly where the participant would otherwise
+      // sit looking at an unresponsive Continue button. The overlay fades
+      // in only after ~150ms, so a fast transition never flashes it.
+      showOverlay("Loading the assessment…");
       window.location.href = "cases.html";
       return;
     }
@@ -266,6 +274,7 @@ function initFooterYear() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  initNetworkBanner();
   initFormSubmit();
   initLiveValidationUpdates();
   initFooterYear();

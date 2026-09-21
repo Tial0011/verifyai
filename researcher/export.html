@@ -67,6 +67,25 @@
               </div>
             </div>
             <p class="r-status-line" id="filtered-count"></p>
+
+            <!-- Column relevance. The three arms don't produce the same
+                 variables, so a No-AI-only selection shouldn't download
+                 8 questions' worth of blank AI and VERIFY-AI columns.
+                 See js/researcher/csv.js for the exact rule. -->
+            <label class="r-checkbox" for="applicable-columns-only">
+              <input type="checkbox" id="applicable-columns-only" checked />
+              <span>
+                <span class="r-checkbox__label">Only include columns that apply to this selection</span>
+                <span class="r-checkbox__hint">
+                  Leaves out AI and VERIFY-AI columns when no participant
+                  in the selection has them — so a No-AI export contains
+                  only No-AI fields. Turn this off to always download the
+                  full column set.
+                </span>
+              </span>
+            </label>
+
+            <p class="r-status-line r-status-line--muted" id="column-plan"></p>
           </div>
         </section>
 
@@ -80,8 +99,10 @@
             </p>
             <p class="r-export-card__cols">
               participant_id, university, study_condition, submission_date,
-              submission_timestamp, completion_status, q1…q8_final_response,
-              q1…q8_confidence, q1…q8_time_to_initial_answer_seconds,
+              submission_timestamp, completion_status,
+              total_duration_seconds / _minutes / _display,
+              assessment_duration_seconds, active_question_time_seconds,
+              q1…q8_final_response, q1…q8_confidence,
               q1…q8_total_question_time_seconds, plus AI /
               VERIFY-AI columns where applicable.
             </p>
@@ -98,18 +119,21 @@
               agreement-with-AI models).
             </p>
             <p class="r-export-card__cols">
-              participant_id, university, study_condition, question_number,
-              question_id, initial_response, final_response,
-              answer_changed, confidence, started_at, answered_at,
-              completed_at, time_to_initial_answer_seconds,
-              total_question_time_seconds, ai_shown, ai_suggestion,
-              answer_matches_ai, verify_* columns.
+              participant_id, university, study_condition,
+              participant_total_duration_seconds,
+              participant_assessment_duration_seconds, question_number,
+              question_id, final_response, confidence, started_at,
+              answered_at, completed_at, total_question_time_seconds,
+              plus initial_response, answer_changed, ai_* and verify_*
+              columns where applicable.
             </p>
             <button class="btn btn-primary" type="button" id="download-responses-btn">
               Download response-level CSV
             </button>
           </div>
         </div>
+
+        <p class="r-status-line" id="download-status" role="status" aria-live="polite"></p>
       </div>
     </main>
   </div>

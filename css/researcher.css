@@ -1088,3 +1088,56 @@
   background: var(--color-bg);
   border-color: var(--color-ink);
 }
+
+/* ---------------------------------------------------------------------
+   Export options
+   --------------------------------------------------------------------- */
+
+/* The "only include columns that apply" option and its explanation of
+   the resulting column plan. Sits under the export filters, above the
+   two download cards. */
+
+.r-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  cursor: pointer;
+}
+
+.r-checkbox input[type="checkbox"] {
+  margin-top: 0.15rem;
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  accent-color: var(--color-ink);
+  cursor: pointer;
+}
+
+.r-checkbox__label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.r-checkbox__hint {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--color-ink-faint);
+}
+
+/* The plain-language restatement of what the download will contain.
+   Slightly recessed so it reads as a consequence of the controls above
+   it rather than as another control. */
+.r-status-line--muted {
+  line-height: 1.55;
+  border-left: 2px solid var(--color-line);
+  padding-left: 0.7rem;
+}

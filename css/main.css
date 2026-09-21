@@ -372,3 +372,183 @@ button:focus-visible,
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+/* ==========================================================================
+   Loading + network states (shared: participant AND researcher pages)
+
+   Every place the app waits on the network — the final Firestore
+   submission, researcher sign-in, a CSV build over a large dataset —
+   should show one of these rather than appearing frozen. Nothing here is
+   page-specific, so it lives in main.css alongside .btn.
+   ========================================================================== */
+
+/* Author `display` rules beat the browser's built-in [hidden]{display:none}.
+   researcher.css already restores this for its own pages; participant
+   pages need it too now that they toggle `hidden` on flex/inline-flex
+   elements (the button spinner, the offline banner). */
+[hidden] {
+  display: none !important;
+}
+
+/* --- Button busy state ---------------------------------------------------
+   Applied by js/utils/loading.js#setButtonLoading. The spinner element is
+   inserted as the button's first child; .btn is already inline-flex with a
+   gap, so it sits neatly before the label without any layout shift. */
+
+.btn__spinner {
+  width: 1em;
+  height: 1em;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  opacity: 0.85;
+  animation: va-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.btn--loading {
+  cursor: progress;
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* A loading button is disabled, but it should still read as "working",
+   not as "unavailable" — keep it closer to full strength. */
+.btn--loading:disabled,
+.btn--loading[aria-disabled="true"] {
+  opacity: 0.8;
+  cursor: progress;
+}
+
+@keyframes va-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn__spinner,
+  .va-overlay__spinner {
+    animation-duration: 1.6s;
+  }
+}
+
+/* --- Inline spinner for status lines ------------------------------------ */
+
+.va-inline-spinner {
+  display: inline-block;
+  vertical-align: -0.15em;
+  width: 0.9em;
+  height: 0.9em;
+  margin-right: 0.45em;
+  border-radius: 50%;
+  border: 2px solid var(--color-line-strong);
+  border-top-color: var(--color-ink);
+  animation: va-spin 0.7s linear infinite;
+}
+
+/* --- Full-page transition overlay ---------------------------------------
+   Used for the short waits where the whole page is about to change (entry
+   → cases, last question → submission screen). Deliberately unobtrusive:
+   it fades in after a beat so a fast transition never flashes a spinner. */
+
+.va-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: rgba(245, 246, 244, 0.86);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  animation: va-overlay-in 0.25s ease 0.15s forwards;
+}
+
+.va-overlay__spinner {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 3px solid var(--color-line-strong);
+  border-top-color: var(--color-ink);
+  animation: va-spin 0.7s linear infinite;
+}
+
+.va-overlay__message {
+  margin: 0;
+  color: var(--color-ink-soft);
+  font-size: 0.95rem;
+  text-align: center;
+  max-width: 28rem;
+  padding-inline: 1.25rem;
+}
+
+@keyframes va-overlay-in {
+  to {
+    opacity: 1;
+  }
+}
+
+/* --- Offline / connection banner ----------------------------------------
+   Driven by the browser's online/offline events (js/utils/loading.js).
+   Sticks to the top of the viewport so a participant who loses signal
+   mid-assessment is told before they try to submit, not after. */
+
+.va-netbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  padding-top: calc(0.6rem + env(safe-area-inset-top, 0px));
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: center;
+  color: #fff;
+  background: #8a2f2f;
+}
+
+.va-netbar[data-state="back"] {
+  background: var(--color-accent);
+}
+
+/* --- Slow-connection hint under a submit button -------------------------- */
+
+.va-slow-hint {
+  margin: 0.6rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--color-ink-soft);
+  border-left: 3px solid var(--color-line-strong);
+  padding: 0.2rem 0 0.2rem 0.75rem;
+}
+
+/* --- Error state for a failed action ------------------------------------- */
+
+.va-error {
+  margin: 0.75rem 0 0;
+  padding: 0.85rem 1rem;
+  border-left: 3px solid #8a2f2f;
+  background: #fbf1f1;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: #5d2020;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.va-error strong {
+  display: block;
+  margin-bottom: 0.15rem;
+}
