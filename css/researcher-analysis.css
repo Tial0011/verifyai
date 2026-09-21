@@ -659,3 +659,336 @@
     gap: 0.5rem;
   }
 }
+
+
+/* ---------------------------------------------------------------------
+   Mobile-first refinements
+   The analysis page is intentionally comfortable on narrow phones:
+   no forced desktop-width charts, controls stack cleanly, and cards
+   keep readable tap targets.
+   --------------------------------------------------------------------- */
+
+.r-analysis-hero > div:first-child {
+  min-width: 0;
+}
+
+.r-analysis-hero .r-topbar__title {
+  overflow-wrap: anywhere;
+}
+
+.r-analysis-card,
+.r-analysis-filters,
+.r-analysis-note,
+.r-analysis-kpi {
+  min-width: 0;
+}
+
+.r-analysis-chart-host {
+  min-width: 0;
+}
+
+.r-svg-chart-wrap {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.r-svg-chart {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 860px) {
+  .r-analysis-hero {
+    align-items: flex-start;
+    gap: 0.85rem;
+  }
+
+  .r-analysis-live {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .r-analysis-note {
+    font-size: 0.82rem;
+    line-height: 1.5;
+    padding: 0.8rem 0.9rem;
+  }
+
+  .r-analysis-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    padding: 0.9rem;
+  }
+
+  .r-analysis-filters > div:not(.r-analysis-filter-meta) {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .r-analysis-filter-meta {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin-left: 0;
+    justify-content: space-between;
+  }
+
+  .r-analysis-kpis {
+    gap: 0.65rem;
+  }
+
+  .r-analysis-kpi {
+    min-height: 118px;
+    padding: 0.9rem;
+  }
+
+  .r-analysis-kpi strong {
+    font-size: 1.65rem;
+  }
+
+  .r-analysis-grid,
+  .r-analysis-grid--wide {
+    gap: 0.9rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .r-panel__head {
+    padding: 0.9rem 1rem;
+  }
+
+  .r-analysis-chart {
+    padding: 1rem;
+  }
+
+  .r-chart-footnote {
+    padding: 0 1rem 1rem;
+  }
+
+  .r-analysis-card__head--controls {
+    align-items: stretch;
+  }
+
+  .r-analysis-card__head--controls > .r-segmented {
+    width: 100%;
+  }
+
+  .r-segmented {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .r-segmented::-webkit-scrollbar {
+    display: none;
+  }
+
+  .r-segmented button {
+    min-height: 40px;
+    flex: 1 0 auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .r-main {
+    padding: 0.9rem 0.75rem 3rem;
+  }
+
+  .r-analysis-hero {
+    margin-bottom: 0.9rem;
+  }
+
+  .r-analysis-eyebrow,
+  .r-analysis-card__eyebrow {
+    font-size: 0.66rem;
+  }
+
+  .r-analysis-hero .r-topbar__title {
+    font-size: clamp(1.55rem, 8vw, 2rem);
+    line-height: 1.05;
+  }
+
+  .r-analysis-hero .r-topbar__subtitle {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+
+  .r-analysis-live {
+    gap: 0.5rem;
+  }
+
+  .r-analysis-updated {
+    font-size: 0.72rem;
+  }
+
+  .r-analysis-filters {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+    padding: 0.8rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .r-analysis-filter-meta {
+    grid-column: auto;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .r-analysis-reset {
+    min-height: 42px;
+    padding-inline: 0.85rem;
+  }
+
+  .r-analysis-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .r-analysis-kpi {
+    min-height: 108px;
+    padding: 0.8rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .r-analysis-kpi p {
+    font-size: 0.64rem;
+    line-height: 1.25;
+  }
+
+  .r-analysis-kpi strong {
+    font-size: 1.45rem;
+  }
+
+  .r-analysis-kpi span {
+    font-size: 0.68rem;
+    line-height: 1.25;
+  }
+
+  .r-panel {
+    border-radius: var(--radius-sm);
+  }
+
+  .r-panel__head {
+    align-items: flex-start;
+    padding: 0.8rem 0.85rem;
+  }
+
+  .r-panel__title {
+    font-size: 1rem;
+    line-height: 1.25;
+  }
+
+  .r-chart-caption {
+    font-size: 0.68rem;
+    white-space: normal;
+    text-align: right;
+  }
+
+  .r-analysis-chart {
+    padding: 0.85rem;
+    min-height: 150px;
+    gap: 0.65rem;
+  }
+
+  .r-analysis-chart--timing,
+  .r-analysis-chart--case {
+    min-height: 190px;
+  }
+
+  .r-svg-chart-wrap {
+    overflow-x: hidden;
+  }
+
+  .r-svg-chart {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .r-svg-label,
+  .r-svg-value {
+    font-size: 11px;
+  }
+
+  .r-chart-interaction {
+    min-height: 38px;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.7rem;
+  }
+
+  .r-chart-interaction strong {
+    font-size: 0.78rem;
+  }
+
+  .r-ai-summary {
+    gap: 0.5rem;
+    padding: 0.8rem 0.85rem 0.1rem;
+    flex-wrap: wrap;
+  }
+
+  .r-ai-summary strong {
+    font-size: 1.5rem;
+  }
+
+  .r-ai-summary span {
+    font-size: 0.7rem;
+    line-height: 1.35;
+  }
+
+  .r-donut-layout {
+    min-height: 0;
+    gap: 0.75rem;
+  }
+
+  .r-donut {
+    width: 145px;
+  }
+
+  .r-donut-legend__item {
+    min-height: 44px;
+    padding: 0.5rem;
+  }
+
+  .r-donut-legend__text {
+    gap: 0.35rem;
+  }
+
+  .r-donut-legend__text strong,
+  .r-donut-legend__text small {
+    font-size: 0.7rem;
+  }
+
+  .r-segmented {
+    border-radius: var(--radius-sm);
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .r-segmented button {
+    width: 100%;
+    text-align: left;
+    border-radius: 0.4rem;
+  }
+
+  .r-analysis-empty {
+    margin: 2rem auto;
+    padding: 1.75rem 1rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .r-analysis-kpis {
+    grid-template-columns: 1fr;
+  }
+
+  .r-analysis-kpi {
+    min-height: 96px;
+  }
+
+  .r-analysis-filter-meta {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .r-analysis-reset {
+    width: 100%;
+  }
+}

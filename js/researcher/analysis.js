@@ -199,11 +199,14 @@ function renderBars(elementId, groups, options = {}) {
   const max = options.max ?? Math.max(...groups.map((g) => Number(g.value) || 0), 1);
   const unit = options.unit || "";
   const format = options.format || ((v) => `${v}${unit}`);
-  const width = 760;
-  const rowH = 64;
-  const left = 178;
-  const right = 92;
-  const chartW = width - left - right;
+  // Size the SVG to the actual card width so charts stay readable on phones.
+  // The viewBox remains vector-based, so labels do not become tiny desktop-scaled text.
+  const availableWidth = el.clientWidth || 760;
+  const width = Math.max(300, Math.min(760, availableWidth - 4));
+  const rowH = width < 430 ? 58 : 64;
+  const left = width < 430 ? 112 : 178;
+  const right = width < 430 ? 62 : 92;
+  const chartW = Math.max(90, width - left - right);
   const height = Math.max(150, groups.length * rowH + 24);
 
   el.innerHTML = `
@@ -340,12 +343,15 @@ function renderLine(elementId, groups, options = {}) {
     return;
   }
 
-  const width = 760;
-  const height = 300;
-  const left = 52;
-  const right = 24;
-  const top = 24;
-  const bottom = 52;
+  // Keep the case-time chart genuinely responsive instead of forcing
+  // a 760px canvas that becomes unreadable when squeezed onto a phone.
+  const availableWidth = el.clientWidth || 760;
+  const width = Math.max(300, Math.min(760, availableWidth - 4));
+  const height = width < 430 ? 250 : 300;
+  const left = width < 430 ? 38 : 52;
+  const right = width < 430 ? 14 : 24;
+  const top = 20;
+  const bottom = width < 430 ? 58 : 52;
   const plotW = width - left - right;
   const plotH = height - top - bottom;
   const max = options.max ?? Math.max(...groups.map((g) => Number(g.value) || 0), 1);
@@ -684,6 +690,17 @@ async function init() {
 
 window.addEventListener("beforeunload", () => {
   if (unsubscribe) unsubscribe();
+});
+
+// Rebuild the SVGs when the viewport changes (rotation, split-screen, etc.).
+// This keeps labels and chart proportions readable instead of relying on
+// horizontal scrolling on small screens.
+let resizeTimer = null;
+window.addEventListener("resize", () => {
+  if (resizeTimer) clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (allParticipants.length) renderAll();
+  }, 120);
 });
 
 init();
