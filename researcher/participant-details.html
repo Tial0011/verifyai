@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Participant — VERIFY-AI Researcher</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/researcher.css" />
+</head>
+<body class="r-body">
+  <div class="r-shell">
+    <aside class="r-sidebar">
+      <a class="r-sidebar__brand" href="dashboard.html">
+        <span class="brand__mark" aria-hidden="true">V</span>
+        <span class="r-sidebar__brand-text">VERIFY-AI<span class="r-sidebar__brand-sub">Researcher</span></span>
+      </a>
+      <ul class="r-nav">
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="participants.html" aria-current="page">Participants</a></li>
+        <li><a href="export.html">Export</a></li>
+      </ul>
+      <div class="r-sidebar__footer">
+        <p class="r-sidebar__user" id="researcher-email"></p>
+        <button class="r-logout" id="logout-btn" type="button">Log out</button>
+      </div>
+    </aside>
+
+    <main class="r-main">
+      <a class="r-back-link" href="participants.html">&larr; Back to participants</a>
+
+      <div class="r-loading" id="loading-state">
+        <span class="r-spinner" aria-hidden="true"></span>
+        <span>Loading participant record…</span>
+      </div>
+
+      <div id="not-found-state" class="r-empty" hidden>
+        <p class="r-empty__title">Participant not found.</p>
+        <p>This record may not exist, or you may not have access to it.</p>
+      </div>
+
+      <div id="detail-content" hidden>
+        <div class="r-topbar">
+          <div>
+            <h1 class="r-topbar__title" id="participant-heading"></h1>
+            <p class="r-topbar__subtitle" id="participant-subheading"></p>
+          </div>
+        </div>
+
+        <section class="r-panel">
+          <div class="r-panel__head">
+            <h2 class="r-panel__title">Participant information</h2>
+          </div>
+          <div class="r-panel__body">
+            <dl class="r-detail-grid" id="participant-info-grid"></dl>
+          </div>
+        </section>
+
+        <h2 class="r-panel__title" style="margin: 1.75rem 0 1rem;">Responses</h2>
+        <div id="questions-container"></div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="../js/researcher/participant-details.js"></script>
+</body>
+</html>

@@ -22,9 +22,26 @@ rules_version = '2';
 //     idempotency key, is otherwise immutable, and isn't publicly
 //     readable/listable.
 //   - Nothing else is reachable by the public client at all.
-//   - Researcher-only access (dashboards/exports) is intentionally NOT
-//     defined here yet — it needs an actual researcher auth/claims design
-//     before rules can safely grant read access to participant data.
+//
+// PHASE 3 UPDATE — researcher read access:
+//   - A researcher signs in with Firebase Authentication (email/password).
+//     Authentication alone does not grant access — see isResearcher() below.
+//   - Authorization is a manual allowlist: a document at
+//     /researchers/{uid} whose ID is that researcher's Firebase Auth UID.
+//     Only the research team can create these documents, by hand, in the
+//     Firebase Console (Firestore Data tab) or via the Admin SDK — the
+//     rules below make them uncreatable/unlistable from the client, so
+//     there is no path for anyone to grant themselves access from the
+//     website. See README for the exact console steps.
+//   - An authorized researcher gets READ-ONLY access to /participants.
+//     They can never create, update, or delete a participant record —
+//     those stay governed entirely by isParticipantShapeValid() above,
+//     which only the participant-submission transaction can satisfy.
+
+function isResearcher() {
+  return request.auth != null &&
+    exists(/databases/$(database)/documents/researchers/$(request.auth.uid));
+}
 
 function isParticipantShapeValid(data) {
   return data.keys().hasAll(['participantId', 'university', 'studyCondition', 'consent', 'createdAt'])
@@ -81,14 +98,24 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // One participant record per generated ID. Create-once; never
-    // readable, updatable, or listable by the public client. (A future
-    // researcher-access design should add scoped read rules here, gated
-    // on real auth — not opened up as part of this change.)
+    // One participant record per generated ID. Create-once by the public
+    // client (no login required, per the study design). Read (get/list)
+    // is granted ONLY to an authorized researcher — never to the public,
+    // and never as an update/delete under any identity.
     match /participants/{participantId} {
-      allow get, list: if false;
+      allow get, list: if isResearcher();
       allow create: if isParticipantShapeValid(request.resource.data);
       allow update, delete: if false;
+    }
+
+    // Researcher allowlist. A researcher may only read their OWN doc (to
+    // check "am I authorized"), which is all isResearcher() needs. Every
+    // write path is closed from the client — these documents can only be
+    // added/removed by the project owner via the Firebase Console or the
+    // Admin SDK, never through the website in any authenticated state.
+    match /researchers/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow list, create, update, delete: if false;
     }
 
     // Deny everything else by default.

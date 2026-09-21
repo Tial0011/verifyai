@@ -55,6 +55,19 @@ export const ARM_BY_INSTITUTION = {
   "babcock-university-ilishan-remo": ARMS.STANDARD_AI,
 };
 
+/**
+ * Human-readable institution names, exactly as the entry form's <option>
+ * labels read (see participant/entry.html). Added for the researcher
+ * dashboard (Phase 3) — participants never see this export used anywhere;
+ * it only saves the researcher pages from hard-coding the same three
+ * strings a second time. Keyed the same as ARM_BY_INSTITUTION.
+ */
+export const INSTITUTION_LABELS = {
+  "university-of-ibadan": "University of Ibadan",
+  "university-of-medical-sciences-ondo": "University of Medical Sciences, Ondo",
+  "babcock-university-ilishan-remo": "Babcock University, Ilishan-Remo",
+};
+
 /** True if the given arm value is one of the three defined arms. */
 export function isValidArm(arm) {
   return Object.values(ARMS).includes(arm);

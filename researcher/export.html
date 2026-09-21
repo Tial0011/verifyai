@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Export — VERIFY-AI Researcher</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/researcher.css" />
+</head>
+<body class="r-body">
+  <div class="r-shell">
+    <aside class="r-sidebar">
+      <a class="r-sidebar__brand" href="dashboard.html">
+        <span class="brand__mark" aria-hidden="true">V</span>
+        <span class="r-sidebar__brand-text">VERIFY-AI<span class="r-sidebar__brand-sub">Researcher</span></span>
+      </a>
+      <ul class="r-nav">
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="participants.html">Participants</a></li>
+        <li><a href="export.html" aria-current="page">Export</a></li>
+      </ul>
+      <div class="r-sidebar__footer">
+        <p class="r-sidebar__user" id="researcher-email"></p>
+        <button class="r-logout" id="logout-btn" type="button">Log out</button>
+      </div>
+    </aside>
+
+    <main class="r-main">
+      <div class="r-topbar">
+        <div>
+          <h1 class="r-topbar__title">Export</h1>
+          <p class="r-topbar__subtitle">Download analysis-ready CSVs for Google Sheets, Excel, or LibreOffice.</p>
+        </div>
+        <span class="r-live-pill" id="live-pill" data-state="ok">
+          <span class="r-live-dot" aria-hidden="true"></span>
+          <span id="live-label">Live</span>
+        </span>
+      </div>
+
+      <div class="r-loading" id="loading-state">
+        <span class="r-spinner" aria-hidden="true"></span>
+        <span>Loading research data…</span>
+      </div>
+
+      <div id="export-content" hidden>
+        <section class="r-panel">
+          <div class="r-panel__head">
+            <h2 class="r-panel__title">Filter data to export</h2>
+          </div>
+          <div class="r-panel__body">
+            <div class="r-filter-form">
+              <div class="field">
+                <label for="university-filter">University</label>
+                <select class="r-select" id="university-filter">
+                  <option value="">All universities</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="condition-filter">Study condition</label>
+                <select class="r-select" id="condition-filter">
+                  <option value="">All conditions</option>
+                </select>
+              </div>
+            </div>
+            <p class="r-status-line" id="filtered-count"></p>
+          </div>
+        </section>
+
+        <div class="r-export-grid">
+          <div class="r-export-card">
+            <h3 class="r-export-card__title">Participant summary</h3>
+            <p class="r-export-card__desc">
+              One row per participant — the primary dataset for
+              statistical analysis. All 8 questions' final responses,
+              confidence, and timing are laid out as columns.
+            </p>
+            <p class="r-export-card__cols">
+              participant_id, university, study_condition, submission_date,
+              submission_timestamp, completion_status, q1…q8_final_response,
+              q1…q8_confidence, q1…q8_time_taken_seconds, plus AI /
+              VERIFY-AI columns where applicable.
+            </p>
+            <button class="btn btn-primary" type="button" id="download-summary-btn">
+              Download summary CSV
+            </button>
+          </div>
+
+          <div class="r-export-card">
+            <h3 class="r-export-card__title">Response-level dataset</h3>
+            <p class="r-export-card__desc">
+              One row per question response — best for detailed
+              per-response statistical analysis (e.g. timing or
+              agreement-with-AI models).
+            </p>
+            <p class="r-export-card__cols">
+              participant_id, university, study_condition, question_number,
+              question_id, initial_response, final_response,
+              answer_changed, confidence, started_at, answered_at,
+              completed_at, time_taken_seconds, ai_shown, ai_suggestion,
+              answer_matches_ai, verify_* columns.
+            </p>
+            <button class="btn btn-primary" type="button" id="download-responses-btn">
+              Download response-level CSV
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="../js/researcher/export.js"></script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Researcher Login — VERIFY-AI</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/participant-entry.css" />
+  <link rel="stylesheet" href="../css/researcher.css" />
+</head>
+<body class="r-body">
+  <div class="r-auth">
+    <div class="r-auth__card">
+      <div class="r-auth__brand">
+        <span class="brand__mark" aria-hidden="true">V</span>
+        <span class="brand__name">VERIFY-AI</span>
+      </div>
+
+      <p class="r-auth__eyebrow">Research team access</p>
+      <h1 class="r-auth__title">Researcher login</h1>
+
+      <p class="r-auth__error" id="auth-error" role="alert"></p>
+
+      <form id="login-form" novalidate>
+        <div class="field" id="email-field" data-invalid="false">
+          <label class="field__label" for="email">Email</label>
+          <input class="field__control" type="email" id="email" name="email" autocomplete="username" required />
+          <p class="field__error">Please enter your email address.</p>
+        </div>
+
+        <div class="field" id="password-field" data-invalid="false">
+          <label class="field__label" for="password">Password</label>
+          <input class="field__control" type="password" id="password" name="password" autocomplete="current-password" required />
+          <p class="field__error">Please enter your password.</p>
+        </div>
+
+        <button class="btn btn-primary r-auth__submit" type="submit" id="login-btn">Log in</button>
+      </form>
+
+      <p class="r-auth__footnote">
+        For authorized VERIFY-AI research team members only. Contact the
+        study lead if you need access.
+      </p>
+    </div>
+  </div>
+
+  <script type="module" src="../js/researcher/login.js"></script>
+</body>
+</html>

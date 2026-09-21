@@ -257,14 +257,24 @@ Technical implementation decisions may be made by the developer, but they must n
 
 ---
 
-**Status:** Participant flow implemented for all three study arms
+**Status:** Participant flow implemented for all three study arms.
+Researcher dashboard, participant data views, and CSV export implemented
+(Phase 3).
 
-**Stack:** HTML + CSS + JavaScript + Firebase + Netlify
+**Stack:** HTML + CSS + JavaScript + Firebase (Firestore + Authentication) + Netlify
 
 **Current scope:** Landing page → participant entry/consent → 8-question
 clinical assessment in one of three conditions (No-AI, Standard AI,
-AI + VERIFY-AI) → single final Firestore submission. Researcher dashboard
-and exports are still not built.
+AI + VERIFY-AI) → single final Firestore submission. A separate
+`researcher/` area gives the research team a real-time dashboard,
+participant search/filter/detail views, and two analysis-ready CSV
+exports — all read-only, gated by Firebase Authentication plus a manual
+researcher allowlist.
 
 See `docs/THREE-ARM-IMPLEMENTATION.md` for how the arms are implemented,
 what data is recorded, and the open items awaiting research-team sign-off.
+
+See `docs/PHASE-3-RESEARCHER-DASHBOARD.md` for the researcher dashboard's
+architecture, the Firebase Console setup required (creating a researcher
+account, granting it access), the security model, and a step-by-step test
+procedure.

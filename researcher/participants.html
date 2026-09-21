@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Participants — VERIFY-AI Researcher</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/researcher.css" />
+</head>
+<body class="r-body">
+  <div class="r-shell">
+    <aside class="r-sidebar">
+      <a class="r-sidebar__brand" href="dashboard.html">
+        <span class="brand__mark" aria-hidden="true">V</span>
+        <span class="r-sidebar__brand-text">VERIFY-AI<span class="r-sidebar__brand-sub">Researcher</span></span>
+      </a>
+      <ul class="r-nav">
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="participants.html" aria-current="page">Participants</a></li>
+        <li><a href="export.html">Export</a></li>
+      </ul>
+      <div class="r-sidebar__footer">
+        <p class="r-sidebar__user" id="researcher-email"></p>
+        <button class="r-logout" id="logout-btn" type="button">Log out</button>
+      </div>
+    </aside>
+
+    <main class="r-main">
+      <div class="r-topbar">
+        <div>
+          <h1 class="r-topbar__title">Participants</h1>
+          <p class="r-topbar__subtitle">Search, filter, and open any participant's full record.</p>
+        </div>
+        <span class="r-live-pill" id="live-pill" data-state="ok">
+          <span class="r-live-dot" aria-hidden="true"></span>
+          <span id="live-label">Live</span>
+        </span>
+      </div>
+
+      <div class="r-loading" id="loading-state">
+        <span class="r-spinner" aria-hidden="true"></span>
+        <span>Loading research data…</span>
+      </div>
+
+      <section class="r-panel" id="participants-panel" hidden>
+        <div class="r-filter-bar">
+          <div class="r-filter-bar__search">
+            <input type="search" id="search-input" placeholder="Search by participant ID…" aria-label="Search by participant ID" />
+          </div>
+          <select class="r-select" id="university-filter" aria-label="Filter by university">
+            <option value="">All universities</option>
+          </select>
+          <select class="r-select" id="condition-filter" aria-label="Filter by study condition">
+            <option value="">All conditions</option>
+          </select>
+          <select class="r-select" id="status-filter" aria-label="Filter by status">
+            <option value="">All statuses</option>
+          </select>
+          <span class="r-filter-bar__count" id="result-count"></span>
+        </div>
+
+        <div class="r-table-scroll">
+          <table class="r-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>University</th>
+                <th>Study condition</th>
+                <th>Submitted</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="participants-tbody"></tbody>
+          </table>
+        </div>
+
+        <div id="empty-filtered" class="r-empty" hidden>
+          <p class="r-empty__title">No participants match these filters.</p>
+          <p>Try clearing the search or filters above.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="../js/researcher/participants.js"></script>
+</body>
+</html>
