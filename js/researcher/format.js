@@ -5,7 +5,7 @@
  * across dashboard.js / participants.js / participant-details.js /
  * csv.js without coupling them to each other.
  */
-import { ARM_LABELS } from "../participant/study-arm.js";
+import { ARM_LABELS, armShowsAi } from "../participant/study-arm.js";
 
 export function escapeHtml(value) {
   return String(value ?? "").replace(
@@ -78,6 +78,48 @@ export function secondsBetween(startValue, endValue) {
   if (!start || !end) return null;
   const diff = Math.round((end.getTime() - start.getTime()) / 1000);
   return diff >= 0 ? diff : null;
+}
+
+/**
+ * The raw timestamp that counts as "the answer was given" for a response:
+ * AI arms → initialAnswerAt (first pick, before the AI suggestion showed;
+ * null if it was never recorded — no fallback to submittedAt). No-AI →
+ * submittedAt. Used for the answered_at column and the timing maths so the
+ * two can never disagree.
+ */
+export function answerMomentFor(response) {
+  if (!response) return null;
+  const isAiArm = response.studyArm
+    ? armShowsAi(response.studyArm)
+    : Boolean(response.aiSuggestionShown);
+  return (isAiArm ? response.initialAnswerAt : response.submittedAt) || null;
+}
+
+/**
+ * Per-question timing, derived from the RAW timestamps (which are never
+ * modified — see csv.js). Single source of truth for both the CSV export
+ * and the participant detail page.
+ *
+ *   time_to_initial_answer_seconds
+ *     AI arms:  startedAt -> initialAnswerAt (first pick, made BEFORE the
+ *               AI suggestion appeared). Blank if initialAnswerAt is
+ *               missing — no fallback, so an AI-arm value is never
+ *               silently swapped for the total time.
+ *     No-AI:    startedAt -> submittedAt. There is no AI to reveal, so no
+ *               separate first-pick timestamp exists; submission is the
+ *               answer moment.
+ *
+ *   total_question_time_seconds
+ *     All arms: startedAt -> submittedAt.
+ *
+ * Either value is null when a required timestamp is missing.
+ */
+export function questionTimings(response) {
+  if (!response) return { timeToInitialAnswer: null, totalQuestionTime: null };
+  return {
+    timeToInitialAnswer: secondsBetween(response.startedAt, answerMomentFor(response)),
+    totalQuestionTime: secondsBetween(response.startedAt, response.submittedAt),
+  };
 }
 
 export function formatSeconds(seconds) {

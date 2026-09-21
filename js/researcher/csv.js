@@ -7,10 +7,12 @@
  *
  * Design rules followed here:
  *   - snake_case headers throughout, one consistent naming convention
- *     (q1_time_taken_seconds, never Q1Time / q1Time / Q1_Time).
- *   - Raw timestamps are exported as-is (ISO 8601 / whatever Firestore
- *     gave us) alongside a derived *_time_taken_seconds column — nothing
- *     here overwrites a raw timestamp with a calculated value.
+ *     (q1_total_question_time_seconds, never Q1Time / q1Time / Q1_Time).
+ *   - Raw timestamps (started_at, answered_at, completed_at) are exported
+ *     as-is (ISO 8601) alongside the derived time_to_initial_answer_seconds
+ *     and total_question_time_seconds columns — nothing here overwrites a
+ *     raw timestamp with a calculated value. The derivations live in
+ *     format.js#questionTimings.
  *   - A missing value is always an empty CSV field, never a fabricated
  *     one and never the string "undefined"/"null".
  *   - Every field is CSV-escaped (RFC 4126-style): wrapped in quotes and
@@ -22,7 +24,7 @@
 import { QUESTIONS, TOTAL_QUESTIONS } from "../participant/case-data.js";
 import { INSTITUTION_LABELS } from "../participant/study-arm.js";
 import { STEPS as VERIFY_STEPS } from "../participant/verify-workflow.js";
-import { toDate, secondsBetween, completionStatus } from "./format.js";
+import { toDate, questionTimings, answerMomentFor, completionStatus } from "./format.js";
 
 function csvField(value) {
   if (value === null || value === undefined) return "";
@@ -48,35 +50,28 @@ function isoOrBlank(value) {
 }
 
 function universityLabel(participant) {
-  return (
-    INSTITUTION_LABELS[participant.university] || participant.university || ""
-  );
+  return INSTITUTION_LABELS[participant.university] || participant.university || "";
 }
 
 function responseFor(participant, questionIndex) {
-  const responses = Array.isArray(participant.studyResponses)
-    ? participant.studyResponses
-    : [];
+  const responses = Array.isArray(participant.studyResponses) ? participant.studyResponses : [];
   return responses[questionIndex] || null;
 }
 
-/** answered_at: the moment a value was actually locked in — the first
- * pick when an AI suggestion exists (that's the meaningful "answer
- * selected" moment for AI arms), otherwise the final submission itself. */
+/** answered_at: raw timestamp of the answer moment — first pick for AI arms,
+ * submission for No-AI (see format.js#answerMomentFor). Blank, never a
+ * substitute, if the relevant raw timestamp wasn't recorded. */
 function answeredAtFor(response) {
-  if (!response) return null;
-  return response.initialAnswerAt || response.submittedAt || null;
+  return answerMomentFor(response);
 }
 
 function verifyStepValue(response, stepKey) {
-  const entry =
-    response && response.verifyResponses && response.verifyResponses[stepKey];
+  const entry = response && response.verifyResponses && response.verifyResponses[stepKey];
   return entry ? entry.value : "";
 }
 
 function verifyStepNote(response, stepKey) {
-  const entry =
-    response && response.verifyResponses && response.verifyResponses[stepKey];
+  const entry = response && response.verifyResponses && response.verifyResponses[stepKey];
   return entry ? entry.note : "";
 }
 
@@ -120,7 +115,7 @@ export function buildSummaryCsv(participants) {
       `q${i}_verify_review`,
       `q${i}_verify_independently_compare`,
       `q${i}_verify_flag`,
-      `q${i}_verify_yield`,
+      `q${i}_verify_yield`
     );
   }
 
@@ -131,12 +126,8 @@ export function buildSummaryCsv(participants) {
       participant_id: p.participantId || p.id || "",
       university: universityLabel(p),
       study_condition: p.studyCondition || "",
-      submission_date: isoOrBlank(
-        p.timestamps && p.timestamps.submittedAt,
-      ).slice(0, 10),
-      submission_timestamp: isoOrBlank(
-        p.timestamps && p.timestamps.submittedAt,
-      ),
+      submission_date: isoOrBlank(p.timestamps && p.timestamps.submittedAt).slice(0, 10),
+      submission_timestamp: isoOrBlank(p.timestamps && p.timestamps.submittedAt),
       completion_status: completionStatus(p),
     };
 
@@ -146,31 +137,19 @@ export function buildSummaryCsv(participants) {
       row[`q${i}_initial_response`] = r ? r.initialAnswerLabel || "" : "";
       row[`q${i}_final_response`] = r ? r.finalAnswerLabel || "" : "";
       row[`q${i}_answer_changed`] = r ? yesNo(r.answerChangedAfterAi) : "";
-      row[`q${i}_confidence`] =
-        r && typeof r.confidence === "number" ? r.confidence : "";
+      row[`q${i}_confidence`] = r && typeof r.confidence === "number" ? r.confidence : "";
       row[`q${i}_started_at`] = r ? isoOrBlank(r.startedAt) : "";
       row[`q${i}_answered_at`] = r ? isoOrBlank(answeredAtFor(r)) : "";
       row[`q${i}_completed_at`] = r ? isoOrBlank(r.submittedAt) : "";
-      row[`q${i}_time_to_initial_answer_seconds`] =
-        r && r.startedAt && r.initialAnswerAt
-          ? (secondsBetween(r.startedAt, r.initialAnswerAt) ?? "")
-          : "";
-
-      row[`q${i}_total_question_time_seconds`] =
-        r && r.startedAt && r.submittedAt
-          ? (secondsBetween(r.startedAt, r.submittedAt) ?? "")
-          : "";
+      const timing = questionTimings(r);
+      row[`q${i}_time_to_initial_answer_seconds`] = timing.timeToInitialAnswer ?? "";
+      row[`q${i}_total_question_time_seconds`] = timing.totalQuestionTime ?? "";
       row[`q${i}_ai_shown`] = r ? yesNo(Boolean(r.aiSuggestionShown)) : "";
-      row[`q${i}_ai_suggestion`] =
-        r && r.aiSuggestion ? r.aiSuggestion.optionLabel || "" : "";
-      row[`q${i}_answer_matches_ai`] = r
-        ? yesNo(r.answerMatchesAiSuggestion)
-        : "";
+      row[`q${i}_ai_suggestion`] = r && r.aiSuggestion ? r.aiSuggestion.optionLabel || "" : "";
+      row[`q${i}_answer_matches_ai`] = r ? yesNo(r.answerMatchesAiSuggestion) : "";
       VERIFY_STEPS.forEach((step) => {
         const col = `q${i}_verify_${
-          step.key === "independentlyCompare"
-            ? "independently_compare"
-            : step.key
+          step.key === "independentlyCompare" ? "independently_compare" : step.key
         }`;
         row[col] = r ? verifyStepValue(r, step.key) : "";
       });
@@ -201,7 +180,8 @@ export function buildResponseLevelCsv(participants) {
     "started_at",
     "answered_at",
     "completed_at",
-    "time_taken_seconds",
+    "time_to_initial_answer_seconds",
+    "total_question_time_seconds",
     "ai_shown",
     "ai_suggestion",
     "answer_matches_ai",
@@ -220,6 +200,7 @@ export function buildResponseLevelCsv(participants) {
   participants.forEach((p) => {
     QUESTIONS.forEach((q, idx) => {
       const r = responseFor(p, idx);
+      const timing = questionTimings(r);
       rows.push({
         participant_id: p.participantId || p.id || "",
         university: universityLabel(p),
@@ -234,26 +215,16 @@ export function buildResponseLevelCsv(participants) {
         started_at: r ? isoOrBlank(r.startedAt) : "",
         answered_at: r ? isoOrBlank(answeredAtFor(r)) : "",
         completed_at: r ? isoOrBlank(r.submittedAt) : "",
-        time_to_initial_answer_seconds:
-          r && r.startedAt && r.initialAnswerAt
-            ? (secondsBetween(r.startedAt, r.initialAnswerAt) ?? "")
-            : "",
-
-        total_question_time_seconds:
-          r && r.startedAt && r.submittedAt
-            ? (secondsBetween(r.startedAt, r.submittedAt) ?? "")
-            : "",
+        time_to_initial_answer_seconds: timing.timeToInitialAnswer ?? "",
+        total_question_time_seconds: timing.totalQuestionTime ?? "",
         ai_shown: r ? yesNo(Boolean(r.aiSuggestionShown)) : "",
-        ai_suggestion:
-          r && r.aiSuggestion ? r.aiSuggestion.optionLabel || "" : "",
+        ai_suggestion: r && r.aiSuggestion ? r.aiSuggestion.optionLabel || "" : "",
         answer_matches_ai: r ? yesNo(r.answerMatchesAiSuggestion) : "",
         verify_validate: r ? verifyStepValue(r, "validate") : "",
         verify_examine: r ? verifyStepValue(r, "examine") : "",
         verify_review: r ? verifyStepValue(r, "review") : "",
         verify_review_note: r ? verifyStepNote(r, "review") : "",
-        verify_independently_compare: r
-          ? verifyStepValue(r, "independentlyCompare")
-          : "",
+        verify_independently_compare: r ? verifyStepValue(r, "independentlyCompare") : "",
         verify_flag: r ? verifyStepValue(r, "flag") : "",
         verify_flag_note: r ? verifyStepNote(r, "flag") : "",
         verify_yield: r ? verifyStepValue(r, "yield") : "",

@@ -8,11 +8,14 @@
  */
 import { requireResearcher, initLogout } from "./guard.js";
 import { subscribeToParticipants } from "./store.js";
+import { markLoaded, startSlowLoadHint, showLoadError } from "./ui.js";
 import { INSTITUTION_LABELS, ARM_LABELS } from "../participant/study-arm.js";
 import { armLabel, escapeHtml, formatDateTime, completionStatus } from "./format.js";
 
 let allParticipants = [];
 let unsubscribe = null;
+let loadWatchdog = null;
+let hasLoadedOnce = false;
 
 function setLiveState(state) {
   const pill = document.getElementById("live-pill");
@@ -120,15 +123,17 @@ function handleData(participants) {
   setLiveState("ok");
   allParticipants = participants;
 
-  document.getElementById("loading-state").hidden = true;
+  hasLoadedOnce = true;
+  markLoaded(loadWatchdog);
   document.getElementById("participants-panel").hidden = false;
 
   refreshFilterOptions();
   applyFiltersAndRender();
 }
 
-function handleError() {
+function handleError(error) {
   setLiveState("error");
+  showLoadError(error, hasLoadedOnce, loadWatchdog);
 }
 
 function initControls() {
@@ -144,6 +149,7 @@ async function init() {
   initLogout();
   initControls();
 
+  loadWatchdog = startSlowLoadHint();
   unsubscribe = subscribeToParticipants(handleData, handleError);
 }
 

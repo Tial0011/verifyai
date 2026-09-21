@@ -6,7 +6,8 @@
  * anything else. It resolves once Firebase Auth's initial state is known,
  * then:
  *
- *   - not signed in            → redirect to login.html
+ *   - not signed in            → redirect to login.html (or, right after
+ *                                  an explicit logout, to the public site)
  *   - signed in, not authorized → sign out + redirect to login.html with
  *                                  ?denied=1 (login.html shows a message)
  *   - signed in and authorized  → resolves with { uid, email }
@@ -31,9 +32,53 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import { auth, db } from "../firebase/config.js";
 
+// Where a researcher who has just logged out belongs: the public,
+// participant-facing site — never an admin page again.
+const CLIENT_HOME = "../index.html";
+const LOGGED_OUT_FLAG = "verifyai_researcher_logged_out";
+
+function readFlag() {
+  try {
+    return sessionStorage.getItem(LOGGED_OUT_FLAG) === "1";
+  } catch {
+    return false;
+  }
+}
+
+/** Remember (for this tab) that the researcher deliberately logged out. */
+export function markLoggedOut() {
+  try {
+    sessionStorage.setItem(LOGGED_OUT_FLAG, "1");
+  } catch {
+    /* storage unavailable — the redirect below still works */
+  }
+}
+
+/** Called by the login page: visiting it means "I want to sign in again". */
+export function clearLoggedOutFlag() {
+  try {
+    sessionStorage.removeItem(LOGGED_OUT_FLAG);
+  } catch {
+    /* ignore */
+  }
+}
+
+// location.replace (not href) everywhere below so a protected page never
+// stays in the Back-button history behind a redirect.
 function goToLogin(reason) {
   const suffix = reason ? `?${reason}=1` : "";
-  window.location.href = `login.html${suffix}`;
+  window.location.replace(`login.html${suffix}`);
+}
+
+/** Signed out / no session on a protected page. After an explicit logout
+ * this goes to the public site; a cold visit to an admin URL still goes
+ * to the login form. */
+function leaveProtectedPage() {
+  if (readFlag()) {
+    window.location.replace(CLIENT_HOME);
+  } else {
+    goToLogin();
+  }
 }
 
 /**
@@ -42,10 +87,17 @@ function goToLogin(reason) {
  * first, before rendering any research data.
  */
 export function requireResearcher() {
+  // Back/Forward can restore this page from the browser's back-forward
+  // cache WITHOUT re-running any script, so a logged-out admin page would
+  // reappear as if nothing happened. Re-check on every restore.
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted && !auth.currentUser) leaveProtectedPage();
+  });
+
   return new Promise((resolve) => {
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        goToLogin();
+        leaveProtectedPage();
         return;
       }
 
@@ -79,10 +131,13 @@ export function initLogout(elementId = "logout-btn") {
   if (!btn) return;
   btn.addEventListener("click", async () => {
     btn.disabled = true;
+    // Flag first: signOut() fires the auth listener above, and it needs
+    // to know this is a deliberate logout so it agrees on the destination.
+    markLoggedOut();
     try {
       await signOut(auth);
     } finally {
-      window.location.href = "login.html";
+      window.location.replace(CLIENT_HOME);
     }
   });
 }

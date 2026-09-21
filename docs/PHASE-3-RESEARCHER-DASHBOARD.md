@@ -39,7 +39,7 @@ participant-facing code imports it.
 - **Participant detail** (`researcher/participant-details.html`) — every
   one of the 8 responses for one participant: initial vs. final answer,
   whether the answer changed, confidence, full timing (started / answer
-  selected / completed / time taken), the AI suggestion and whether the
+  selected / completed / time to initial answer / total question time), the AI suggestion and whether the
   final answer matched it (AI arms), and the full six-step VERIFY-AI
   evaluation (VERIFY-AI arm only). Fields that were never recorded show
   "Not recorded" rather than a blank or a guess. This page is read-only —
@@ -197,7 +197,8 @@ participant_id, university, study_condition, submission_date,
 submission_timestamp, completion_status,
 
 q1_initial_response, q1_final_response, q1_answer_changed, q1_confidence,
-q1_started_at, q1_answered_at, q1_completed_at, q1_time_taken_seconds,
+q1_started_at, q1_answered_at, q1_completed_at,
+q1_time_to_initial_answer_seconds, q1_total_question_time_seconds,
 q1_ai_shown, q1_ai_suggestion, q1_answer_matches_ai,
 q1_verify_validate, q1_verify_examine, q1_verify_review,
 q1_verify_independently_compare, q1_verify_flag, q1_verify_yield,
@@ -209,10 +210,19 @@ q1_verify_independently_compare, q1_verify_flag, q1_verify_yield,
 as `yes` / `no` / blank (blank = not applicable or not recorded — e.g.
 `answer_changed` is always blank in the No-AI arm, and every `verify_*`
 column is blank for participants outside the AI + VERIFY-AI arm).
-`*_time_taken_seconds` is a plain integer (seconds from `startedAt` to
-`submittedAt`), never a formatted duration string, so it's ready for
-spreadsheet arithmetic. Raw ISO-8601 timestamps are exported alongside
-it — nothing is overwritten.
+Timing (Phase 3.1) — two plain-integer columns per question, never a
+formatted duration string, so they're ready for spreadsheet arithmetic:
+
+| Column | No-AI | Standard AI / AI + VERIFY-AI |
+| --- | --- | --- |
+| `*_time_to_initial_answer_seconds` | `startedAt` → `submittedAt` (no AI reveal, so no separate first-pick moment exists) | `startedAt` → `initialAnswerAt` (first pick, made before the AI suggestion appeared) |
+| `*_total_question_time_seconds` | `startedAt` → `submittedAt` | `startedAt` → `submittedAt` |
+
+Either is blank if a required timestamp is missing (no fallback). The raw
+ISO-8601 `started_at`, `answered_at` and `completed_at` columns are still
+exported alongside them — nothing is overwritten. This replaces the
+single `time_taken_seconds` column from Phase 3, which was identical to
+`total_question_time_seconds`.
 
 ### Export 2 — Response-Level Dataset (one row per question response)
 
@@ -220,7 +230,8 @@ it — nothing is overwritten.
 participant_id, university, study_condition, question_number,
 question_id, scenario_id, initial_response, final_response,
 answer_changed, confidence, started_at, answered_at, completed_at,
-time_taken_seconds, ai_shown, ai_suggestion, answer_matches_ai,
+time_to_initial_answer_seconds, total_question_time_seconds,
+ai_shown, ai_suggestion, answer_matches_ai,
 verify_validate, verify_examine, verify_review, verify_review_note,
 verify_independently_compare, verify_flag, verify_flag_note, verify_yield
 ```
@@ -266,7 +277,7 @@ manual cleanup step.
      participant from each of the three study arms (one No-AI, one
      Standard AI, one AI + VERIFY-AI participant).
    - Confirm all 8 questions render, with per-question timing (Started /
-     Answer selected / Completed / Time taken).
+     Answer selected / Completed / Time to initial answer / Total question time).
    - Confirm the AI arms show "AI recommendation" and whether the final
      answer matched it; confirm only the AI + VERIFY-AI participant shows
      the six VERIFY-AI steps; confirm the No-AI participant shows neither.
@@ -294,3 +305,47 @@ manual cleanup step.
    - Confirm the participant-facing pages (`participant/entry.html`,
      `cases.html`, `complete.html`) still work exactly as before — same
      questions, same flow, same single Firestore write.
+
+## Phase 3.1 corrections
+
+- **Timing columns** — `time_taken_seconds` replaced by
+  `time_to_initial_answer_seconds` + `total_question_time_seconds` (see
+  §6). Raw timestamps unchanged. Derivation lives in one place:
+  `questionTimings()` in `js/researcher/format.js`, used by both the CSV
+  export and the participant detail page.
+- **"Loading research data…" never clearing** — three causes fixed:
+  1. `.r-loading { display: flex }` overrode the `hidden` attribute, so
+     the loader stayed on screen after data arrived. Fixed with a global
+     `[hidden] { display: none !important; }` in `css/researcher.css`.
+  2. A failed Firestore listener only changed the "Live" pill and left
+     the spinner running. `js/researcher/ui.js` now shows a specific
+     message (permission denied / unavailable / other) in its place, and
+     a "still connecting" hint after 10 s.
+  3. `firestore.rules` declared its helper functions outside the
+     `service` block, which Firestore rejects. They now sit inside
+     `match /databases/{database}/documents`. **The rules must be
+     re-published** (Firebase Console → Firestore → Rules) for this to
+     take effect.
+- **Researcher mobile navigation** (≤ 860px) — the sidebar used to
+  collapse into one crowded row with the links stacking into a tall
+  column. It is now a compact pinned top bar: brand + Log out on row 1,
+  the three nav links as an even tab strip on row 2 (44px touch
+  targets, scrolls sideways if a future link doesn't fit). The shell
+  switches from grid to block on mobile so `position: sticky` actually
+  works. Checked at 320, 375 and 820px with no horizontal page overflow.
+- **Logout / Back button** — logging out now lands on the public site
+  (`index.html`), not the login form, and the Back button can no longer
+  bring back an admin page:
+  - Logout and the auth-guard redirects use `location.replace`, so the
+    admin page is swapped out of history instead of stacked behind the
+    new page. The login page also uses `replace` on success, so Back
+    from the dashboard doesn't stop on the login form.
+  - A per-tab "logged out" flag (sessionStorage) makes any admin page
+    reached afterwards (older history entries, typed URLs) redirect to
+    the public site. Visiting `login.html` clears the flag, and a cold
+    visit to an admin URL still goes to the login form.
+  - `pageshow` re-checks the session when a page is restored from the
+    browser's back-forward cache (which skips all scripts), and
+    `netlify.toml` now sends `Cache-Control: no-store` for
+    `/researcher/*` so those pages aren't cached in the first place.
+    **The header only takes effect once `netlify.toml` is deployed.**

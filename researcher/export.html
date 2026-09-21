@@ -81,7 +81,8 @@
             <p class="r-export-card__cols">
               participant_id, university, study_condition, submission_date,
               submission_timestamp, completion_status, q1…q8_final_response,
-              q1…q8_confidence, q1…q8_time_taken_seconds, plus AI /
+              q1…q8_confidence, q1…q8_time_to_initial_answer_seconds,
+              q1…q8_total_question_time_seconds, plus AI /
               VERIFY-AI columns where applicable.
             </p>
             <button class="btn btn-primary" type="button" id="download-summary-btn">
@@ -100,7 +101,8 @@
               participant_id, university, study_condition, question_number,
               question_id, initial_response, final_response,
               answer_changed, confidence, started_at, answered_at,
-              completed_at, time_taken_seconds, ai_shown, ai_suggestion,
+              completed_at, time_to_initial_answer_seconds,
+              total_question_time_seconds, ai_shown, ai_suggestion,
               answer_matches_ai, verify_* columns.
             </p>
             <button class="btn btn-primary" type="button" id="download-responses-btn">

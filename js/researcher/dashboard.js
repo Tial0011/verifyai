@@ -9,11 +9,14 @@
  */
 import { requireResearcher, initLogout } from "./guard.js";
 import { subscribeToParticipants } from "./store.js";
+import { markLoaded, startSlowLoadHint, showLoadError } from "./ui.js";
 import { INSTITUTION_LABELS } from "../participant/study-arm.js";
 import { armLabel, escapeHtml, formatRelative, completionStatus } from "./format.js";
 
 let previousIds = null; // null = first load (don't toast for the initial batch)
 let unsubscribe = null;
+let loadWatchdog = null;
+let hasLoadedOnce = false;
 
 function setLiveState(state) {
   const pill = document.getElementById("live-pill");
@@ -156,7 +159,8 @@ function showToast(participant) {
 
 function handleData(participants) {
   setLiveState("ok");
-  document.getElementById("loading-state").hidden = true;
+  hasLoadedOnce = true;
+  markLoaded(loadWatchdog);
   document.getElementById("dashboard-content").hidden = false;
 
   const currentIds = new Set(participants.map((p) => p.id));
@@ -176,8 +180,9 @@ function handleData(participants) {
   renderFeed(participants, newIds);
 }
 
-function handleError() {
+function handleError(error) {
   setLiveState("error");
+  showLoadError(error, hasLoadedOnce, loadWatchdog);
 }
 
 async function init() {
@@ -185,6 +190,7 @@ async function init() {
   document.getElementById("researcher-email").textContent = researcher.email;
   initLogout();
 
+  loadWatchdog = startSlowLoadHint();
   unsubscribe = subscribeToParticipants(handleData, handleError);
 }
 

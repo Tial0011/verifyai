@@ -8,6 +8,13 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
 
+# Admin pages must never be served from the browser's cache or its
+# back-forward cache, so Back can't resurrect a logged-out dashboard.
+[[headers]]
+  for = "/researcher/*"
+  [headers.values]
+    Cache-Control = "no-store"
+
 [[redirects]]
   from = "/docs/*"
   to = "/index.html"

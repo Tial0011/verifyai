@@ -294,35 +294,75 @@
   .r-live-dot { animation: none; }
 }
 
-/* Mobile: collapse sidebar to a top bar ------------------------------- */
+/* Mobile: collapse sidebar to a compact, pinned top bar ---------------
+   Row 1: brand (left) + Log out (right). Row 2: nav links as an even
+   tab strip. The shell drops out of grid so `position: sticky` works
+   against the whole page (as a grid item it could only stick within its
+   own row, i.e. not at all). */
 
 @media (max-width: 860px) {
   .r-shell {
-    grid-template-columns: 1fr;
+    display: block;
   }
   .r-sidebar {
-    position: static;
+    position: sticky;
+    top: 0;
+    z-index: 30;
     height: auto;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "brand footer"
+      "nav   nav";
     align-items: center;
-    padding: 0.85rem 1rem;
-    gap: 1rem;
+    gap: 0.55rem 0.75rem;
+    padding: 0.7rem 1rem 0.55rem;
+    padding-top: calc(0.7rem + env(safe-area-inset-top, 0px));
   }
   .r-sidebar__brand {
+    grid-area: brand;
     padding: 0;
+    min-width: 0;
+  }
+  .r-sidebar__brand .brand__mark {
+    width: 30px;
+    height: 30px;
   }
   .r-nav {
+    grid-area: nav;
+    flex: none;
     flex-direction: row;
-    flex-wrap: wrap;
-    flex: 1;
+    flex-wrap: nowrap;
+    gap: 0.25rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .r-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .r-nav li {
+    flex: 1 0 auto;
+  }
+  .r-nav a {
+    justify-content: center;
+    min-height: 44px;
+    padding: 0.5rem 0.9rem;
+    white-space: nowrap;
   }
   .r-sidebar__footer {
+    grid-area: footer;
     border-top: none;
     margin-top: 0;
     padding-top: 0;
   }
   .r-sidebar__user {
     display: none;
+  }
+  .r-logout {
+    width: auto;
+    min-height: 40px;
+    padding: 0.4rem 0.9rem;
   }
 }
 
@@ -725,6 +765,14 @@
    Loading states
    --------------------------------------------------------------------- */
 
+/* Author `display` rules (like .r-loading's flex below) beat the browser's
+   built-in [hidden] { display: none }, so `el.hidden = true` silently did
+   nothing and "Loading research data…" stayed on screen after data
+   arrived. This restores the attribute's meaning for every researcher page. */
+[hidden] {
+  display: none !important;
+}
+
 .r-loading {
   display: flex;
   align-items: center;
@@ -732,6 +780,18 @@
   padding: 2.5rem 1.35rem;
   color: var(--color-ink-faint);
   font-size: 0.92rem;
+}
+
+.r-loading--error {
+  align-items: flex-start;
+  color: var(--color-ink-soft);
+  line-height: 1.5;
+}
+
+.r-loading--error strong {
+  display: block;
+  color: var(--color-ink);
+  margin-bottom: 0.2rem;
 }
 
 .r-spinner {

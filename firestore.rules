@@ -35,44 +35,46 @@ rules_version = '2';
 //     website. See README for the exact console steps.
 //   - An authorized researcher gets READ-ONLY access to /participants.
 //     They can never create, update, or delete a participant record —
-//     those stay governed entirely by isParticipantShapeValid() above,
+//     those stay governed entirely by isParticipantShapeValid() below,
 //     which only the participant-submission transaction can satisfy.
-
-function isResearcher() {
-  return request.auth != null &&
-    exists(/databases/$(database)/documents/researchers/$(request.auth.uid));
-}
-
-function isParticipantShapeValid(data) {
-  return data.keys().hasAll(['participantId', 'university', 'studyCondition', 'consent', 'createdAt'])
-    && data.participantId is string
-    && data.participantId.matches('^VA[0-9]{3}$')
-    && data.participantId == request.resource.id
-    // One of the three study arms (see js/participant/study-arm.js).
-    && data.studyCondition in ['no_ai', 'standard_ai', 'ai_verify_ai']
-    && data.consent == true
-    && data.createdAt == request.time;
-}
-
-function isCounterStepValid() {
-  let before = resource.data.count;
-  let after = request.resource.data.count;
-  return after == before + 1;
-}
-
-function isFirstCounterWriteValid() {
-  return request.resource.data.count == 1;
-}
-
-function isLockShapeValid(data) {
-  return data.keys().hasAll(['participantId', 'createdAt'])
-    && data.participantId is string
-    && data.participantId.matches('^VA[0-9]{3}$')
-    && data.createdAt == request.time;
-}
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper functions live INSIDE this match block on purpose: Firestore
+    // rules do not allow functions outside `service`, and isResearcher()
+    // needs the {database} path variable bound by this block.
+    function isResearcher() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/researchers/$(request.auth.uid));
+    }
+
+    function isParticipantShapeValid(data) {
+      return data.keys().hasAll(['participantId', 'university', 'studyCondition', 'consent', 'createdAt'])
+        && data.participantId is string
+        && data.participantId.matches('^VA[0-9]{3}$')
+        && data.participantId == request.resource.id
+        // One of the three study arms (see js/participant/study-arm.js).
+        && data.studyCondition in ['no_ai', 'standard_ai', 'ai_verify_ai']
+        && data.consent == true
+        && data.createdAt == request.time;
+    }
+
+    function isCounterStepValid() {
+      let before = resource.data.count;
+      let after = request.resource.data.count;
+      return after == before + 1;
+    }
+
+    function isFirstCounterWriteValid() {
+      return request.resource.data.count == 1;
+    }
+
+    function isLockShapeValid(data) {
+      return data.keys().hasAll(['participantId', 'createdAt'])
+        && data.participantId is string
+        && data.participantId.matches('^VA[0-9]{3}$')
+        && data.createdAt == request.time;
+    }
 
     // Sequential-ID counter. Only touchable as part of the same
     // transaction that also creates the lock + participant docs (rules

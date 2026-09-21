@@ -18,6 +18,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import { auth, db } from "../firebase/config.js";
+import { clearLoggedOutFlag } from "./guard.js";
 
 function showError(message) {
   const el = document.getElementById("auth-error");
@@ -60,6 +61,10 @@ function readDeniedParam() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Coming to the login page means they want in again — stop treating
+  // admin URLs as "just logged out, send to the public site".
+  clearLoggedOutFlag();
+
   if (readDeniedParam()) {
     showError("That account is not authorized for researcher access.");
   }
@@ -67,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // If already signed in AND authorized, skip straight to the dashboard.
   onAuthStateChanged(auth, async (user) => {
     if (user && (await isAuthorizedResearcher(user.uid))) {
-      window.location.href = "dashboard.html";
+      window.location.replace("dashboard.html");
     }
   });
 
@@ -97,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
         showError("That account is not authorized for researcher access.");
         return;
       }
-      window.location.href = "dashboard.html";
+      window.location.replace("dashboard.html");
     } catch (err) {
       showError(friendlyAuthError(err));
     } finally {

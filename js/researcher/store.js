@@ -36,53 +36,21 @@ import { db } from "../firebase/config.js";
 export function subscribeToParticipants(onData, onError) {
   const q = query(collection(db, "participants"), orderBy("createdAt", "desc"));
 
-  let settled = false;
-
-  const timeoutId = setTimeout(() => {
-    if (settled) return;
-
-    settled = true;
-
-    const error = new Error(
-      "Research data could not be loaded. Please check your internet connection and try again.",
-    );
-
-    error.code = "network-timeout";
-
-    if (onError) onError(error);
-  }, 10000);
-
   const unsubscribe = onSnapshot(
     q,
     (snapshot) => {
-      if (!settled) {
-        settled = true;
-        clearTimeout(timeoutId);
-      }
-
       const participants = snapshot.docs.map((docSnap) => ({
         id: docSnap.id,
         ...docSnap.data(),
       }));
-
-      onData(participants, {
-        fromCache: snapshot.metadata.fromCache,
-      });
+      onData(participants, { fromCache: snapshot.metadata.fromCache });
     },
     (error) => {
-      if (!settled) {
-        settled = true;
-        clearTimeout(timeoutId);
-      }
-
+      // eslint-disable-next-line no-console
       console.error("VERIFY-AI: participants listener failed", error);
-
       if (onError) onError(error);
-    },
+    }
   );
 
-  return () => {
-    clearTimeout(timeoutId);
-    unsubscribe();
-  };
+  return unsubscribe;
 }
