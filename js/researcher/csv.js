@@ -48,11 +48,15 @@ function isoOrBlank(value) {
 }
 
 function universityLabel(participant) {
-  return INSTITUTION_LABELS[participant.university] || participant.university || "";
+  return (
+    INSTITUTION_LABELS[participant.university] || participant.university || ""
+  );
 }
 
 function responseFor(participant, questionIndex) {
-  const responses = Array.isArray(participant.studyResponses) ? participant.studyResponses : [];
+  const responses = Array.isArray(participant.studyResponses)
+    ? participant.studyResponses
+    : [];
   return responses[questionIndex] || null;
 }
 
@@ -65,12 +69,14 @@ function answeredAtFor(response) {
 }
 
 function verifyStepValue(response, stepKey) {
-  const entry = response && response.verifyResponses && response.verifyResponses[stepKey];
+  const entry =
+    response && response.verifyResponses && response.verifyResponses[stepKey];
   return entry ? entry.value : "";
 }
 
 function verifyStepNote(response, stepKey) {
-  const entry = response && response.verifyResponses && response.verifyResponses[stepKey];
+  const entry =
+    response && response.verifyResponses && response.verifyResponses[stepKey];
   return entry ? entry.note : "";
 }
 
@@ -104,7 +110,8 @@ export function buildSummaryCsv(participants) {
       `q${i}_started_at`,
       `q${i}_answered_at`,
       `q${i}_completed_at`,
-      `q${i}_time_taken_seconds`,
+      `q${i}_time_to_initial_answer_seconds`,
+      `q${i}_total_question_time_seconds`,
       `q${i}_ai_shown`,
       `q${i}_ai_suggestion`,
       `q${i}_answer_matches_ai`,
@@ -113,7 +120,7 @@ export function buildSummaryCsv(participants) {
       `q${i}_verify_review`,
       `q${i}_verify_independently_compare`,
       `q${i}_verify_flag`,
-      `q${i}_verify_yield`
+      `q${i}_verify_yield`,
     );
   }
 
@@ -124,8 +131,12 @@ export function buildSummaryCsv(participants) {
       participant_id: p.participantId || p.id || "",
       university: universityLabel(p),
       study_condition: p.studyCondition || "",
-      submission_date: isoOrBlank(p.timestamps && p.timestamps.submittedAt).slice(0, 10),
-      submission_timestamp: isoOrBlank(p.timestamps && p.timestamps.submittedAt),
+      submission_date: isoOrBlank(
+        p.timestamps && p.timestamps.submittedAt,
+      ).slice(0, 10),
+      submission_timestamp: isoOrBlank(
+        p.timestamps && p.timestamps.submittedAt,
+      ),
       completion_status: completionStatus(p),
     };
 
@@ -135,17 +146,31 @@ export function buildSummaryCsv(participants) {
       row[`q${i}_initial_response`] = r ? r.initialAnswerLabel || "" : "";
       row[`q${i}_final_response`] = r ? r.finalAnswerLabel || "" : "";
       row[`q${i}_answer_changed`] = r ? yesNo(r.answerChangedAfterAi) : "";
-      row[`q${i}_confidence`] = r && typeof r.confidence === "number" ? r.confidence : "";
+      row[`q${i}_confidence`] =
+        r && typeof r.confidence === "number" ? r.confidence : "";
       row[`q${i}_started_at`] = r ? isoOrBlank(r.startedAt) : "";
       row[`q${i}_answered_at`] = r ? isoOrBlank(answeredAtFor(r)) : "";
       row[`q${i}_completed_at`] = r ? isoOrBlank(r.submittedAt) : "";
-      row[`q${i}_time_taken_seconds`] = r ? secondsBetween(r.startedAt, r.submittedAt) ?? "" : "";
+      row[`q${i}_time_to_initial_answer_seconds`] =
+        r && r.startedAt && r.initialAnswerAt
+          ? (secondsBetween(r.startedAt, r.initialAnswerAt) ?? "")
+          : "";
+
+      row[`q${i}_total_question_time_seconds`] =
+        r && r.startedAt && r.submittedAt
+          ? (secondsBetween(r.startedAt, r.submittedAt) ?? "")
+          : "";
       row[`q${i}_ai_shown`] = r ? yesNo(Boolean(r.aiSuggestionShown)) : "";
-      row[`q${i}_ai_suggestion`] = r && r.aiSuggestion ? r.aiSuggestion.optionLabel || "" : "";
-      row[`q${i}_answer_matches_ai`] = r ? yesNo(r.answerMatchesAiSuggestion) : "";
+      row[`q${i}_ai_suggestion`] =
+        r && r.aiSuggestion ? r.aiSuggestion.optionLabel || "" : "";
+      row[`q${i}_answer_matches_ai`] = r
+        ? yesNo(r.answerMatchesAiSuggestion)
+        : "";
       VERIFY_STEPS.forEach((step) => {
         const col = `q${i}_verify_${
-          step.key === "independentlyCompare" ? "independently_compare" : step.key
+          step.key === "independentlyCompare"
+            ? "independently_compare"
+            : step.key
         }`;
         row[col] = r ? verifyStepValue(r, step.key) : "";
       });
@@ -209,15 +234,26 @@ export function buildResponseLevelCsv(participants) {
         started_at: r ? isoOrBlank(r.startedAt) : "",
         answered_at: r ? isoOrBlank(answeredAtFor(r)) : "",
         completed_at: r ? isoOrBlank(r.submittedAt) : "",
-        time_taken_seconds: r ? secondsBetween(r.startedAt, r.submittedAt) ?? "" : "",
+        time_to_initial_answer_seconds:
+          r && r.startedAt && r.initialAnswerAt
+            ? (secondsBetween(r.startedAt, r.initialAnswerAt) ?? "")
+            : "",
+
+        total_question_time_seconds:
+          r && r.startedAt && r.submittedAt
+            ? (secondsBetween(r.startedAt, r.submittedAt) ?? "")
+            : "",
         ai_shown: r ? yesNo(Boolean(r.aiSuggestionShown)) : "",
-        ai_suggestion: r && r.aiSuggestion ? r.aiSuggestion.optionLabel || "" : "",
+        ai_suggestion:
+          r && r.aiSuggestion ? r.aiSuggestion.optionLabel || "" : "",
         answer_matches_ai: r ? yesNo(r.answerMatchesAiSuggestion) : "",
         verify_validate: r ? verifyStepValue(r, "validate") : "",
         verify_examine: r ? verifyStepValue(r, "examine") : "",
         verify_review: r ? verifyStepValue(r, "review") : "",
         verify_review_note: r ? verifyStepNote(r, "review") : "",
-        verify_independently_compare: r ? verifyStepValue(r, "independentlyCompare") : "",
+        verify_independently_compare: r
+          ? verifyStepValue(r, "independentlyCompare")
+          : "",
         verify_flag: r ? verifyStepValue(r, "flag") : "",
         verify_flag_note: r ? verifyStepNote(r, "flag") : "",
         verify_yield: r ? verifyStepValue(r, "yield") : "",
