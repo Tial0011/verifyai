@@ -454,12 +454,13 @@
 }
 
 .r-donut {
+  box-sizing: border-box;
   width: min(190px, 100%);
   aspect-ratio: 1;
   border: 0;
   border-radius: 50%;
   margin-inline: auto;
-  padding: 17%;
+  padding: 0;
   cursor: pointer;
   position: relative;
   transition: transform 0.2s ease;
@@ -478,11 +479,12 @@
 }
 
 .r-donut__inner {
-  position: relative;
+  position: absolute;
+  inset: 15%;
   z-index: 1;
   display: grid;
   place-items: center;
-  height: 100%;
+  height: auto;
   text-align: center;
 }
 
@@ -609,7 +611,8 @@
   }
 
   .r-svg-chart {
-    min-width: 470px;
+    min-width: 0;
+    width: 100%;
   }
 }
 

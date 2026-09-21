@@ -188,6 +188,12 @@ function chartEmpty(el) {
   el.innerHTML = `<div class="r-analysis-no-data">No usable data for this view.</div>`;
 }
 
+function chartLabel(label, maxChars) {
+  const text = String(label ?? "");
+  if (text.length <= maxChars) return text;
+  return `${text.slice(0, Math.max(1, maxChars - 1))}…`;
+}
+
 function renderBars(elementId, groups, options = {}) {
   const el = chartHost(elementId);
   if (!el) return;
@@ -204,7 +210,7 @@ function renderBars(elementId, groups, options = {}) {
   const availableWidth = el.clientWidth || 760;
   const width = Math.max(300, Math.min(760, availableWidth - 4));
   const rowH = width < 430 ? 58 : 64;
-  const left = width < 430 ? 112 : 178;
+  const left = width < 430 ? 132 : 178;
   const right = width < 430 ? 62 : 92;
   const chartW = Math.max(90, width - left - right);
   const height = Math.max(150, groups.length * rowH + 24);
@@ -217,6 +223,7 @@ function renderBars(elementId, groups, options = {}) {
           const value = Number(g.value) || 0;
           const ratio = max > 0 ? Math.min(1, Math.max(0, value / max)) : 0;
           const y = 18 + i * rowH;
+          const displayLabel = chartLabel(g.label, width < 430 ? 21 : 30);
           const barW = Math.max(value > 0 ? 6 : 0, ratio * chartW);
           const color = g.color || "teal";
           return `
@@ -224,7 +231,7 @@ function renderBars(elementId, groups, options = {}) {
               data-chart-label="${escapeHtml(g.label)}"
               data-chart-value="${escapeHtml(format(value))}"
               data-chart-sub="${escapeHtml(g.sub || "")}">
-              <text x="${left - 14}" y="${y + 15}" text-anchor="end" class="r-svg-label">${escapeHtml(g.label)}</text>
+              <text x="${left - 14}" y="${y + 15}" text-anchor="end" class="r-svg-label">${escapeHtml(displayLabel)}</text>
               <rect x="${left}" y="${y}" width="${chartW}" height="18" rx="9" class="r-svg-track"></rect>
               <rect x="${left}" y="${y}" width="${barW}" height="18" rx="9" class="r-svg-fill r-svg-fill--${color}">
                 <title>${escapeHtml(g.label)}: ${escapeHtml(format(value))}</title>
@@ -546,18 +553,6 @@ function renderCaseTimeChart(participants) {
   renderLine("case-time-chart", groups, { format: (v) => formatDuration(v), ariaLabel: "Median time spent on each case" });
 }
 
-function renderCoverageChart(participants) {
-  const groups = QUESTIONS.map((q, i) => {
-    const completed = participants.filter((p) => responseList(p)[i]?.completed).length;
-    return {
-      label: `Q${i + 1}`,
-      value: percent(completed, participants.length),
-      color: ["teal", "violet", "orange"][i % 3],
-      sub: `${completed}/${participants.length} completed`,
-    };
-  });
-  renderBars("coverage-chart", groups, { unit: "%", max: 100 });
-}
 
 function renderVerifyChart(participants) {
   const rows = participants
