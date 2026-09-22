@@ -137,11 +137,17 @@ export function assessmentEndOf(source) {
  * question contributed a usable pair of timestamps (so an incomplete
  * record reports "not recorded" rather than a misleading 0).
  */
+export function questionSecondsOf(response) {
+  return Number.isFinite(response.activeTimeMs)
+    ? Math.round(Math.max(0, response.activeTimeMs) / 1000)
+    : secondsBetween(response.startedAt, response.submittedAt);
+}
+
 export function activeSecondsOf(source) {
   let sum = 0;
   let counted = 0;
   responsesOf(source).forEach((r) => {
-    const secs = secondsBetween(r.startedAt, r.submittedAt);
+    const secs = questionSecondsOf(r);
     if (secs !== null) {
       sum += secs;
       counted += 1;

@@ -9,6 +9,7 @@ import { ARM_LABELS, armShowsAi } from "../participant/study-arm.js";
 import {
   toDate,
   secondsBetween,
+  questionSecondsOf,
   formatDuration,
   toMinutes,
   deriveDurations,
@@ -115,7 +116,7 @@ export function questionTimings(response) {
   if (!response) return { timeToInitialAnswer: null, totalQuestionTime: null };
   return {
     timeToInitialAnswer: secondsBetween(response.startedAt, answerMomentFor(response)),
-    totalQuestionTime: secondsBetween(response.startedAt, response.submittedAt),
+    totalQuestionTime: questionSecondsOf(response),
   };
 }
 

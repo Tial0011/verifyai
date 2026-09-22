@@ -45,7 +45,70 @@ import {
   renderVerifyWorkflow,
   collectAndValidate,
   independentAnswerFrom,
+  STEPS,
 } from "./verify-workflow.js";
+
+let stopQuestionTimer = () => {};
+
+function startQuestionTimer(progress, index) {
+  const response = progress.responses[index];
+  response.activeTimeMs = Number.isFinite(response.activeTimeMs) ? response.activeTimeMs : 0;
+  let started = null;
+  const checkpoint = () => {
+    const now = performance.now();
+    if (started !== null) response.activeTimeMs += now - started;
+    started = !document.hidden && document.hasFocus() ? now : null;
+    const display = document.getElementById("question-time");
+    const seconds = Math.floor(response.activeTimeMs / 1000);
+    if (display) display.textContent = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+    saveStudyProgress(progress);
+  };
+  const pause = () => {
+    checkpoint();
+    started = null;
+  };
+  checkpoint();
+  const interval = window.setInterval(checkpoint, 1000);
+  document.addEventListener("visibilitychange", checkpoint);
+  window.addEventListener("focus", checkpoint);
+  window.addEventListener("blur", pause);
+  window.addEventListener("pagehide", pause);
+  window.addEventListener("pageshow", checkpoint);
+  stopQuestionTimer = () => {
+    pause();
+    window.clearInterval(interval);
+    document.removeEventListener("visibilitychange", checkpoint);
+    window.removeEventListener("focus", checkpoint);
+    window.removeEventListener("blur", pause);
+    window.removeEventListener("pagehide", pause);
+    window.removeEventListener("pageshow", checkpoint);
+    stopQuestionTimer = () => {};
+  };
+}
+
+function saveQuestionDraft(progress, index, form) {
+  progress.responses[index].draftFields = Object.fromEntries(new FormData(form));
+  saveStudyProgress(progress);
+}
+
+function restoreQuestionDraft(form, response) {
+  const fields = response.draftFields || {
+    answer: response.finalAnswerOptionId || response.initialAnswerOptionId,
+    confidence: response.confidence,
+  };
+  if (!response.draftFields && response.verifyResponses) {
+    STEPS.forEach(({ key }) => {
+      fields[`verify-${key}`] = response.verifyResponses[key]?.value;
+      fields[`verify-${key}-note`] = response.verifyResponses[key]?.note;
+    });
+  }
+  for (const control of form.elements) {
+    const value = fields[control.name];
+    if (value == null) continue;
+    if (control.type === "radio") control.checked = control.value === String(value);
+    else if (control.name) control.value = value;
+  }
+}
 
 function escapeHtml(value) {
   return String(value).replace(
@@ -109,6 +172,8 @@ function renderHeader(question, index) {
     index + 1
   } of ${TOTAL_QUESTIONS}</p>
     <h1 class="case-title">Question ${index + 1}</h1>
+    <p class="case-timer">Time on this question: <span id="question-time" role="timer" aria-live="off">0:00</span></p>
+    <p class="case-timer-hint">Time pauses when you leave this question or switch away from this page.</p>
     <div class="case-vignette">${escapeHtml(question.vignette)}</div>
   `;
 }
@@ -191,6 +256,7 @@ function renderRevealed(question, index, showVerify) {
  *                   answer they submit is the final answer.
  */
 function renderQuestion(progress, arm) {
+  stopQuestionTimer();
   const root = document.getElementById("case-root");
   if (!root) return;
 
@@ -228,6 +294,7 @@ function renderQuestion(progress, arm) {
     ${renderHeader(question, index)}
 
     <form id="case-form" novalidate>
+      ${index > 0 ? '<button class="btn btn-secondary" type="button" id="previous-question">Previous question</button>' : ""}
       ${renderAnswerFieldset(question, preselected)}
 
       <div class="reveal-root" id="reveal-root">
@@ -243,6 +310,14 @@ function renderQuestion(progress, arm) {
   `;
 
   const form = document.getElementById("case-form");
+  restoreQuestionDraft(form, progress.responses[index]);
+  document.getElementById("previous-question")?.addEventListener("click", () => {
+    saveQuestionDraft(progress, index, form);
+    stopQuestionTimer();
+    progress.currentIndex = index - 1;
+    saveStudyProgress(progress);
+    renderQuestion(progress, arm);
+  });
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     handleSubmit(progress, arm, index);
@@ -256,6 +331,10 @@ function renderQuestion(progress, arm) {
       revealAi(progress, arm, index, event.target.value);
     });
   }
+
+  form.addEventListener("input", () => saveQuestionDraft(progress, index, form));
+  form.addEventListener("change", () => saveQuestionDraft(progress, index, form));
+  startQuestionTimer(progress, index);
 
   window.scrollTo({ top: 0, behavior: "auto" });
 }
@@ -332,6 +411,9 @@ function handleSubmit(progress, arm, index) {
   const aiOptionId = showAi ? question.aiSuggestion.optionId : null;
   const independentAnswer = verify ? independentAnswerFrom(verify.responses) : null;
   const initialAnswerId = progress.responses[index].initialAnswerOptionId || null;
+
+  saveQuestionDraft(progress, index, document.getElementById("case-form"));
+  stopQuestionTimer();
 
   progress.responses[index] = {
     ...progress.responses[index],

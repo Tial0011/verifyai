@@ -20,7 +20,7 @@ import {
 } from "./format.js";
 import { INSTITUTION_LABELS, ARMS } from "../participant/study-arm.js";
 import { QUESTIONS } from "../participant/case-data.js";
-import { secondsBetween } from "../utils/duration.js";
+import { questionSecondsOf } from "../utils/duration.js";
 
 const ARM_ORDER = [ARMS.NO_AI, ARMS.STANDARD_AI, ARMS.VERIFY_AI];
 const ARM_COLORS = {
@@ -538,7 +538,7 @@ function renderAiCharts(participants) {
 function responseTimingForCase(participants, questionIndex) {
   const values = participants
     .flatMap((p) => responseList(p)[questionIndex] ? [responseList(p)[questionIndex]] : [])
-    .map((r) => secondsBetween(r.startedAt, r.submittedAt))
+    .map(questionSecondsOf)
     .filter((v) => v != null);
   return median(values);
 }

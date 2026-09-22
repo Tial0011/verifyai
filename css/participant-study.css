@@ -203,3 +203,18 @@
   font-size: 0.9rem;
   color: var(--color-ink-faint);
 }
+.case-timer {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-ink-soft);
+}
+
+.case-timer span {
+  font-variant-numeric: tabular-nums;
+}
+
+.case-timer-hint {
+  margin: 0.35rem 0 1rem;
+  font-size: 0.85rem;
+  color: var(--color-ink-faint);
+}
