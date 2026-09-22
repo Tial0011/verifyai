@@ -55,6 +55,7 @@ function startQuestionTimer(progress, index) {
   response.activeTimeMs = Number.isFinite(response.activeTimeMs) ? response.activeTimeMs : 0;
   let started = null;
   const checkpoint = () => {
+    const response = progress.responses[index];
     const now = performance.now();
     if (started !== null) response.activeTimeMs += now - started;
     started = !document.hidden && document.hasFocus() ? now : null;
@@ -216,10 +217,11 @@ function renderConfidenceFieldset() {
   `;
 }
 
-function renderActions(index) {
+function renderActions(index, canSubmit = true) {
   return `
       <div class="form-actions">
-        <button class="btn btn-primary" type="submit">
+        ${index > 0 ? '<button class="btn btn-secondary" type="button" id="previous-question">Previous question</button>' : ""}
+        <button class="btn btn-primary" type="submit" id="next-question"${canSubmit ? "" : " hidden"}>
           ${index + 1 === TOTAL_QUESTIONS ? "Finish assessment" : "Next question"}
         </button>
         <p class="form-status" id="case-status" role="status" aria-live="polite"></p>
@@ -239,7 +241,6 @@ function renderRevealed(question, index, showVerify) {
       <p class="reveal-hint">You can change your answer above if you wish.</p>
       ${showVerify ? renderVerifyWorkflow(question) : ""}
       ${renderConfidenceFieldset()}
-      ${renderActions(index)}
   `;
 }
 
@@ -291,32 +292,37 @@ function renderQuestion(progress, arm) {
   const preselected = alreadyRevealed ? progress.responses[index].initialAnswerOptionId : null;
 
   root.innerHTML = `
+    <nav class="question-nav" aria-label="Questions">
+      ${QUESTIONS.map((_, questionIndex) => `<button type="button" class="question-nav__button" data-question-index="${questionIndex}" aria-label="Question ${questionIndex + 1}"${questionIndex === index ? ' aria-current="step"' : ""}>${questionIndex + 1}</button>`).join("")}
+    </nav>
     ${renderHeader(question, index)}
 
     <form id="case-form" novalidate>
-      ${index > 0 ? '<button class="btn btn-secondary" type="button" id="previous-question">Previous question</button>' : ""}
       ${renderAnswerFieldset(question, preselected)}
 
       <div class="reveal-root" id="reveal-root">
         ${
           !showAi
-            ? `${renderConfidenceFieldset()}${renderActions(index)}`
+            ? renderConfidenceFieldset()
             : alreadyRevealed
             ? renderRevealed(question, index, showVerify)
             : ""
         }
       </div>
+      ${renderActions(index, !showAi || alreadyRevealed)}
     </form>
   `;
 
   const form = document.getElementById("case-form");
   restoreQuestionDraft(form, progress.responses[index]);
   document.getElementById("previous-question")?.addEventListener("click", () => {
-    saveQuestionDraft(progress, index, form);
-    stopQuestionTimer();
-    progress.currentIndex = index - 1;
-    saveStudyProgress(progress);
-    renderQuestion(progress, arm);
+    handleSubmit(progress, arm, index, index - 1);
+  });
+  root.querySelectorAll("[data-question-index]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const destination = Number(button.dataset.questionIndex);
+      if (destination !== index) handleSubmit(progress, arm, index, destination);
+    });
   });
   form.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -364,12 +370,21 @@ function revealAi(progress, arm, index, pickedOptionId) {
 
   const revealRoot = document.getElementById("reveal-root");
   revealRoot.innerHTML = renderRevealed(question, index, showVerify);
+  document.getElementById("next-question").hidden = false;
 
   const panel = revealRoot.querySelector(".ai-panel");
   if (panel) panel.scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
 
-function handleSubmit(progress, arm, index) {
+function goToQuestion(progress, arm, index, destination) {
+  saveQuestionDraft(progress, index, document.getElementById("case-form"));
+  stopQuestionTimer();
+  progress.currentIndex = destination;
+  saveStudyProgress(progress);
+  renderQuestion(progress, arm);
+}
+
+function handleSubmit(progress, arm, index, destination = null) {
   const question = QUESTIONS[index];
   const showAi = armShowsAi(arm);
   const status = document.getElementById("case-status");
@@ -381,7 +396,10 @@ function handleSubmit(progress, arm, index) {
 
   // AI arms can only submit after the reveal (the submit button does not
   // exist before it); guard anyway against implicit form submission.
-  if (showAi && !progress.responses[index].initialAnswerOptionId) return;
+  if (showAi && !progress.responses[index].initialAnswerOptionId) {
+    if (destination !== null) goToQuestion(progress, arm, index, destination);
+    return;
+  }
 
   const answerValid = Boolean(answerInput);
   const confidenceValid = Boolean(confidenceInput);
@@ -394,6 +412,11 @@ function handleSubmit(progress, arm, index) {
   if (armShowsVerifyWorkflow(arm)) {
     verify = collectAndValidate();
     if (!verify.valid) {
+      progress.responses[index].completed = false;
+      if (destination !== null) {
+        goToQuestion(progress, arm, index, destination);
+        return;
+      }
       status.textContent =
         "Please complete every step of the VERIFY-AI check before submitting your final answer.";
       const firstInvalid = document.getElementById(verify.firstInvalidId);
@@ -403,6 +426,11 @@ function handleSubmit(progress, arm, index) {
   }
 
   if (!answerValid || !confidenceValid) {
+    progress.responses[index].completed = false;
+    if (destination !== null) {
+      goToQuestion(progress, arm, index, destination);
+      return;
+    }
     status.textContent = "Please complete both fields before continuing.";
     return;
   }
@@ -430,7 +458,12 @@ function handleSubmit(progress, arm, index) {
     submittedAt: new Date().toISOString(),
     completed: true,
   };
-  progress.currentIndex = index + 1;
+  const firstIncomplete = QUESTIONS.findIndex((_, i) => !progress.responses[i]?.completed);
+  progress.currentIndex = destination !== null
+    ? destination
+    : firstIncomplete === -1
+    ? TOTAL_QUESTIONS
+    : index + 1 < TOTAL_QUESTIONS ? index + 1 : firstIncomplete;
 
   if (progress.currentIndex >= TOTAL_QUESTIONS) {
     // The moment the assessment itself ended. Recorded here rather than

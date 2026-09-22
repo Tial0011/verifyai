@@ -17,6 +17,41 @@
   margin: 0;
 }
 
+.question-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.question-nav__button {
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--color-ink-faint);
+  border-radius: 0.4rem;
+  background: transparent;
+  color: var(--color-ink-soft);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.question-nav__button:hover,
+.question-nav__button[aria-current="step"] {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
+.question-nav__button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+#next-question[hidden] {
+  display: none;
+}
+
 .case-title {
   margin-top: 0.4rem;
   font-size: var(--step-2);
