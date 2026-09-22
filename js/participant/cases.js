@@ -292,9 +292,6 @@ function renderQuestion(progress, arm) {
   const preselected = alreadyRevealed ? progress.responses[index].initialAnswerOptionId : null;
 
   root.innerHTML = `
-    <nav class="question-nav" aria-label="Questions">
-      ${QUESTIONS.map((_, questionIndex) => `<button type="button" class="question-nav__button" data-question-index="${questionIndex}" aria-label="Question ${questionIndex + 1}"${questionIndex === index ? ' aria-current="step"' : ""}>${questionIndex + 1}</button>`).join("")}
-    </nav>
     ${renderHeader(question, index)}
 
     <form id="case-form" novalidate>
@@ -311,6 +308,9 @@ function renderQuestion(progress, arm) {
       </div>
       ${renderActions(index, !showAi || alreadyRevealed)}
     </form>
+    <nav class="question-nav" aria-label="Questions">
+      ${QUESTIONS.map((_, questionIndex) => `<button type="button" class="question-nav__button" data-question-index="${questionIndex}" aria-label="Question ${questionIndex + 1}"${questionIndex === index ? ' aria-current="step"' : ""}>${questionIndex + 1}</button>`).join("")}
+    </nav>
   `;
 
   const form = document.getElementById("case-form");
