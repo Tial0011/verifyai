@@ -1,222 +1,589 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Participant Information — VERIFY-AI</title>
-  <meta name="description" content="Review study information and provide your details before beginning VERIFY-AI." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../css/main.css" />
-  <link rel="stylesheet" href="../css/participant-entry.css" />
-</head>
-<body>
-  <a class="skip-link" href="#main">Skip to main content</a>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Participant Information — VERIFY-AI</title>
+    <meta
+      name="description"
+      content="Review study information and provide your details before beginning VERIFY-AI."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="stylesheet" href="../css/participant-entry.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
 
-  <header class="site-header entry-header">
-    <div class="wrap site-header__inner">
-      <a class="brand" href="../index.html">
-        <span class="brand__mark" aria-hidden="true">V</span>
-        <span class="brand__name">VERIFY-AI</span>
-      </a>
-    </div>
-  </header>
-
-  <main id="main" class="entry-main">
-    <div class="wrap">
-      <div class="entry-intro">
-        <p class="entry-intro__eyebrow">Participant entry</p>
-        <h1>Before you begin</h1>
-        <p>
-          Please provide the information requested below and review the
-          consent information before continuing to the study.
-        </p>
+    <header class="site-header entry-header">
+      <div class="wrap site-header__inner">
+        <a class="brand" href="../index.html">
+          <span class="brand__mark" aria-hidden="true">V</span>
+          <span class="brand__name">VERIFY-AI</span>
+        </a>
       </div>
+    </header>
 
-      <form id="participant-form" novalidate>
-
-        <!-- Participant information ------------------------------------ -->
-        <section class="form-section" aria-labelledby="participant-info-heading">
-          <h2 class="form-section__heading" id="participant-info-heading">Participant information</h2>
-
-          <div class="form-section__fields">
-
-            <div class="field" id="institution-field" data-invalid="false">
-              <div class="field__label-row">
-                <label class="field__label" for="institution">Institution / university</label>
-              </div>
-              <select class="field__control" id="institution" name="institution" autocomplete="organization" required aria-describedby="institution-error">
-                <option value="">Select an option</option>
-                <option value="university-of-medical-sciences-ondo">University of Medical Sciences, Ondo</option>
-                <option value="babcock-university-ilishan-remo">Babcock University, Ilishan-Remo</option>
-                <option value="university-of-ibadan">University of Ibadan, Oyo State</option>
-              </select>
-              <p class="field__error" id="institution-error">Please select your institution.</p>
-            </div>
-
-            <div class="field" id="clinical-year-field" data-invalid="false">
-              <div class="field__label-row">
-                <label class="field__label" for="clinical-year">Clinical year</label>
-              </div>
-              <select class="field__control" id="clinical-year" name="clinical-year" required aria-describedby="clinical-year-error">
-                <option value="">Select an option</option>
-                <option value="400lvl">400lvl</option>
-                <option value="500lvl">500lvl</option>
-                <option value="600lvl">600lvl</option>
-              </select>
-              <p class="field__error" id="clinical-year-error">Please select your clinical year.</p>
-            </div>
-
-            <div class="field" id="age-field" data-invalid="false">
-              <div class="field__label-row">
-                <label class="field__label" for="age">Age</label>
-              </div>
-              <input class="field__control field__control--narrow" type="number" id="age" name="age" min="0" max="120" inputmode="numeric" required aria-describedby="age-error" />
-              <p class="field__error" id="age-error">Please enter a valid age between 0 and 120.</p>
-            </div>
-
-            <fieldset class="field choice-fieldset" id="sex-field" data-invalid="false">
-              <legend>Sex</legend>
-              <div class="choice-options choice-options--compact" role="radiogroup" aria-label="Sex" aria-describedby="sex-error">
-                <label class="choice-option choice-option--compact"><input type="radio" name="sex" value="female" required /> Female</label>
-                <label class="choice-option choice-option--compact"><input type="radio" name="sex" value="male" required /> Male</label>
-                <label class="choice-option choice-option--compact"><input type="radio" name="sex" value="prefer-not-to-say" required /> Prefer not to say</label>
-              </div>
-              <p class="field__error" id="sex-error">Please select an option.</p>
-            </fieldset>
-
-          </div>
-        </section>
-
-        <!-- AI experience / background ----------------------------------- -->
-        <section class="form-section" aria-labelledby="ai-background-heading">
-          <h2 class="form-section__heading" id="ai-background-heading">AI experience &amp; background</h2>
-
-          <div class="form-section__fields">
-
-            <fieldset class="field choice-fieldset" id="ai-exposure-field" data-invalid="false">
-              <legend>Have you used AI tools before?</legend>
-              <div class="choice-options" role="radiogroup" aria-label="Previous exposure to AI" aria-describedby="ai-exposure-error">
-                <label class="choice-option"><input type="radio" name="ai-exposure" value="yes" required /> Yes</label>
-                <label class="choice-option"><input type="radio" name="ai-exposure" value="no" required /> No</label>
-              </div>
-              <p class="field__error" id="ai-exposure-error">Please select an option.</p>
-            </fieldset>
-
-            <div class="field" id="ai-frequency-field" data-invalid="false">
-              <div class="field__label-row">
-                <label class="field__label" for="ai-frequency">How often do you use AI tools?</label>
-              </div>
-              <select class="field__control" id="ai-frequency" name="ai-frequency" required aria-describedby="ai-frequency-error">
-                <option value="">Select an option</option>
-                <option value="daily">Daily</option>
-                <option value="weekly">A few times a week</option>
-                <option value="monthly">A few times a month</option>
-                <option value="rarely">Rarely</option>
-                <option value="never">Never</option>
-              </select>
-              <p class="field__error" id="ai-frequency-error">Please select an option.</p>
-            </div>
-
-            <fieldset class="field choice-fieldset" id="ai-clinical-use-field" data-invalid="false">
-              <legend>Have you used AI for clinical or medical purposes?</legend>
-              <div class="choice-options" role="radiogroup" aria-label="Use of AI for clinical or medical purposes" aria-describedby="ai-clinical-use-error">
-                <label class="choice-option"><input type="radio" name="ai-clinical-use" value="yes" required /> Yes</label>
-                <label class="choice-option"><input type="radio" name="ai-clinical-use" value="no" required /> No</label>
-              </div>
-              <p class="field__error" id="ai-clinical-use-error">Please select an option.</p>
-            </fieldset>
-
-            <fieldset class="field choice-fieldset" id="ai-training-field" data-invalid="false">
-              <legend>Have you had any formal AI training?</legend>
-              <div class="choice-options" role="radiogroup" aria-label="Previous formal AI training" aria-describedby="ai-training-error">
-                <label class="choice-option"><input type="radio" name="ai-training" value="yes" required /> Yes</label>
-                <label class="choice-option"><input type="radio" name="ai-training" value="no" required /> No</label>
-              </div>
-              <p class="field__error" id="ai-training-error">Please select an option.</p>
-            </fieldset>
-
-            <div class="field" data-invalid="false">
-              <div class="field__label-row">
-                <label class="field__label" for="ai-tools">Which AI tools do you use, if any?</label>
-              </div>
-              <input class="field__control" type="text" id="ai-tools" name="ai-tools" placeholder="Free text" />
-            </div>
-
-            <fieldset class="field choice-fieldset" id="ai-literacy-field" data-invalid="false">
-              <legend>How would you rate your own AI literacy?</legend>
-              <div class="choice-options" role="radiogroup" aria-label="Self-rated AI literacy, 1 low to 5 high" aria-describedby="ai-literacy-error">
-                <label class="choice-option"><input type="radio" name="ai-literacy" value="1" required /> 1</label>
-                <label class="choice-option"><input type="radio" name="ai-literacy" value="2" required /> 2</label>
-                <label class="choice-option"><input type="radio" name="ai-literacy" value="3" required /> 3</label>
-                <label class="choice-option"><input type="radio" name="ai-literacy" value="4" required /> 4</label>
-                <label class="choice-option"><input type="radio" name="ai-literacy" value="5" required /> 5</label>
-              </div>
-              <p class="field__error" id="ai-literacy-error">Please select a rating.</p>
-            </fieldset>
-
-            <fieldset class="field choice-fieldset" id="ai-trust-field" data-invalid="false">
-              <legend>How much do you trust AI-generated recommendations?</legend>
-              <div class="choice-options" role="radiogroup" aria-label="Trust in AI, 1 low to 5 high" aria-describedby="ai-trust-error">
-                <label class="choice-option"><input type="radio" name="ai-trust" value="1" required /> 1</label>
-                <label class="choice-option"><input type="radio" name="ai-trust" value="2" required /> 2</label>
-                <label class="choice-option"><input type="radio" name="ai-trust" value="3" required /> 3</label>
-                <label class="choice-option"><input type="radio" name="ai-trust" value="4" required /> 4</label>
-                <label class="choice-option"><input type="radio" name="ai-trust" value="5" required /> 5</label>
-              </div>
-              <p class="field__error" id="ai-trust-error">Please select a rating.</p>
-            </fieldset>
-
-            <fieldset class="field choice-fieldset" id="ai-verify-comfort-field" data-invalid="false">
-              <legend>How comfortable are you verifying AI-generated information?</legend>
-              <div class="choice-options" role="radiogroup" aria-label="Comfort verifying AI-generated information, 1 low to 5 high" aria-describedby="ai-verify-comfort-error">
-                <label class="choice-option"><input type="radio" name="ai-verify-comfort" value="1" required /> 1</label>
-                <label class="choice-option"><input type="radio" name="ai-verify-comfort" value="2" required /> 2</label>
-                <label class="choice-option"><input type="radio" name="ai-verify-comfort" value="3" required /> 3</label>
-                <label class="choice-option"><input type="radio" name="ai-verify-comfort" value="4" required /> 4</label>
-                <label class="choice-option"><input type="radio" name="ai-verify-comfort" value="5" required /> 5</label>
-              </div>
-              <p class="field__error" id="ai-verify-comfort-error">Please select a rating.</p>
-            </fieldset>
-
-          </div>
-        </section>
-
-        <!-- Consent -------------------------------------------------------- -->
-        <section class="form-section" aria-labelledby="consent-heading">
-          <h2 class="form-section__heading" id="consent-heading">Informed consent</h2>
-
-          <label class="consent-check" for="consent-checkbox">
-            <input type="checkbox" id="consent-checkbox" name="consent" required aria-describedby="consent-error" />
-            <span class="consent-check__text">
-              I have read and understood the information above and agree to
-              participate in this study.
-            </span>
-          </label>
-          <div class="field" id="consent-field" data-invalid="false">
-            <p class="field__error" id="consent-error">Please confirm consent to continue.</p>
-          </div>
-        </section>
-
-        <div class="form-actions">
-          <button class="btn btn-primary" type="submit" id="continue-btn" aria-disabled="true">Continue</button>
-          <p class="form-status" id="form-status" role="status" aria-live="polite">
-            Confirm consent above to continue.
+    <main id="main" class="entry-main">
+      <div class="wrap">
+        <div class="entry-intro">
+          <p class="entry-intro__eyebrow">Participant entry</p>
+          <h1>Before you begin</h1>
+          <p>
+            Please provide the information requested below and review the
+            consent information before continuing to the study.
           </p>
         </div>
 
-      </form>
-    </div>
-  </main>
+        <form id="participant-form" novalidate>
+          <!-- Participant information ------------------------------------ -->
+          <section
+            class="form-section"
+            aria-labelledby="participant-info-heading"
+          >
+            <h2 class="form-section__heading" id="participant-info-heading">
+              Participant information
+            </h2>
 
-  <footer class="site-footer">
-    <div class="wrap site-footer__inner">
-      <p>&copy; <span id="footer-year">2026</span> VERIFY-AI.</p>
-      <p>Questions? <a href="tel:+2349066291084">Contact Ebine Favour O.</a></p>
-    </div>
-  </footer>
+            <div class="form-section__fields">
+              <div class="field" id="institution-field" data-invalid="false">
+                <div class="field__label-row">
+                  <label class="field__label" for="institution"
+                    >Institution / university</label
+                  >
+                </div>
+                <select
+                  class="field__control"
+                  id="institution"
+                  name="institution"
+                  autocomplete="organization"
+                  required
+                  aria-describedby="institution-error"
+                >
+                  <option value="">Select an option</option>
+                  <option value="university-of-medical-sciences-ondo">
+                    University of Medical Sciences, Ondo
+                  </option>
+                  <option value="babcock-university-ilishan-remo">
+                    Babcock University, Ilishan-Remo
+                  </option>
+                  <option value="university-of-ibadan">
+                    University of Ibadan, Oyo State
+                  </option>
+                </select>
+                <p class="field__error" id="institution-error">
+                  Please select your institution.
+                </p>
+              </div>
 
-  <script type="module" src="../js/participant/entry.js"></script>
-</body>
+              <div class="field" id="clinical-year-field" data-invalid="false">
+                <div class="field__label-row">
+                  <label class="field__label" for="clinical-year"
+                    >Clinical year</label
+                  >
+                </div>
+                <select
+                  class="field__control"
+                  id="clinical-year"
+                  name="clinical-year"
+                  required
+                  aria-describedby="clinical-year-error"
+                >
+                  <option value="">Select an option</option>
+                  <option value="400lvl">400lvl</option>
+                  <option value="500lvl">500lvl</option>
+                  <option value="600lvl">600lvl</option>
+                </select>
+                <p class="field__error" id="clinical-year-error">
+                  Please select your clinical year.
+                </p>
+              </div>
+
+              <div class="field" id="age-field" data-invalid="false">
+                <div class="field__label-row">
+                  <label class="field__label" for="age">Age</label>
+                </div>
+                <input
+                  class="field__control field__control--narrow"
+                  type="number"
+                  id="age"
+                  name="age"
+                  min="0"
+                  max="120"
+                  inputmode="numeric"
+                  required
+                  aria-describedby="age-error"
+                />
+                <p class="field__error" id="age-error">
+                  Please enter a valid age between 0 and 120.
+                </p>
+              </div>
+
+              <fieldset
+                class="field choice-fieldset"
+                id="sex-field"
+                data-invalid="false"
+              >
+                <legend>Sex</legend>
+                <div
+                  class="choice-options choice-options--compact"
+                  role="radiogroup"
+                  aria-label="Sex"
+                  aria-describedby="sex-error"
+                >
+                  <label class="choice-option choice-option--compact"
+                    ><input type="radio" name="sex" value="female" required />
+                    Female</label
+                  >
+                  <label class="choice-option choice-option--compact"
+                    ><input type="radio" name="sex" value="male" required />
+                    Male</label
+                  >
+                  <label class="choice-option choice-option--compact"
+                    ><input
+                      type="radio"
+                      name="sex"
+                      value="prefer-not-to-say"
+                      required
+                    />
+                    Prefer not to say</label
+                  >
+                </div>
+                <p class="field__error" id="sex-error">
+                  Please select an option.
+                </p>
+              </fieldset>
+            </div>
+          </section>
+
+          <!-- AI experience / background ----------------------------------- -->
+          <section class="form-section" aria-labelledby="ai-background-heading">
+            <h2 class="form-section__heading" id="ai-background-heading">
+              AI experience &amp; background
+            </h2>
+
+            <div class="form-section__fields">
+              <fieldset
+                class="field choice-fieldset"
+                id="ai-exposure-field"
+                data-invalid="false"
+              >
+                <legend>Have you used AI tools before?</legend>
+                <div
+                  class="choice-options"
+                  role="radiogroup"
+                  aria-label="Previous exposure to AI"
+                  aria-describedby="ai-exposure-error"
+                >
+                  <label class="choice-option"
+                    ><input
+                      type="radio"
+                      name="ai-exposure"
+                      value="yes"
+                      required
+                    />
+                    Yes</label
+                  >
+                  <label class="choice-option"
+                    ><input
+                      type="radio"
+                      name="ai-exposure"
+                      value="no"
+                      required
+                    />
+                    No</label
+                  >
+                </div>
+                <p class="field__error" id="ai-exposure-error">
+                  Please select an option.
+                </p>
+              </fieldset>
+
+              <div class="field" id="ai-frequency-field" data-invalid="false">
+                <div class="field__label-row">
+                  <label class="field__label" for="ai-frequency"
+                    >How often do you use AI tools?</label
+                  >
+                </div>
+                <select
+                  class="field__control"
+                  id="ai-frequency"
+                  name="ai-frequency"
+                  required
+                  aria-describedby="ai-frequency-error"
+                >
+                  <option value="">Select an option</option>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">A few times a week</option>
+                  <option value="monthly">A few times a month</option>
+                  <option value="rarely">Rarely</option>
+                  <option value="never">Never</option>
+                </select>
+                <p class="field__error" id="ai-frequency-error">
+                  Please select an option.
+                </p>
+              </div>
+
+              <fieldset
+                class="field choice-fieldset"
+                id="ai-clinical-use-field"
+                data-invalid="false"
+              >
+                <legend>
+                  Have you used AI for clinical or medical purposes?
+                </legend>
+                <div
+                  class="choice-options"
+                  role="radiogroup"
+                  aria-label="Use of AI for clinical or medical purposes"
+                  aria-describedby="ai-clinical-use-error"
+                >
+                  <label class="choice-option"
+                    ><input
+                      type="radio"
+                      name="ai-clinical-use"
+                      value="yes"
+                      required
+                    />
+                    Yes</label
+                  >
+                  <label class="choice-option"
+                    ><input
+                      type="radio"
+                      name="ai-clinical-use"
+                      value="no"
+                      required
+                    />
+                    No</label
+                  >
+                </div>
+                <p class="field__error" id="ai-clinical-use-error">
+                  Please select an option.
+                </p>
+              </fieldset>
+
+              <fieldset
+                class="field choice-fieldset"
+                id="ai-training-field"
+                data-invalid="false"
+              >
+                <legend>Have you had any formal AI training?</legend>
+                <div
+                  class="choice-options"
+                  role="radiogroup"
+                  aria-label="Previous formal AI training"
+                  aria-describedby="ai-training-error"
+                >
+                  <label class="choice-option"
+                    ><input
+                      type="radio"
+                      name="ai-training"
+                      value="yes"
+                      required
+                    />
+                    Yes</label
+                  >
+                  <label class="choice-option"
+                    ><input
+                      type="radio"
+                      name="ai-training"
+                      value="no"
+                      required
+                    />
+                    No</label
+                  >
+                </div>
+                <p class="field__error" id="ai-training-error">
+                  Please select an option.
+                </p>
+              </fieldset>
+
+              <fieldset class="field choice-fieldset ai-tools-field">
+                <legend>Which AI tools do you use, if any?</legend>
+                <div class="choice-options" aria-label="AI tools used">
+                  <label class="choice-option choice-option--checkbox">
+                    <input type="checkbox" name="ai-tools" value="ChatGPT" />
+                    ChatGPT
+                  </label>
+                  <label class="choice-option choice-option--checkbox">
+                    <input type="checkbox" name="ai-tools" value="Gemini" />
+                    Gemini
+                  </label>
+                  <label class="choice-option choice-option--checkbox">
+                    <input type="checkbox" name="ai-tools" value="Perplexity" />
+                    Perplexity
+                  </label>
+                  <label class="choice-option choice-option--checkbox">
+                    <input type="checkbox" name="ai-tools" value="Claude" />
+                    Claude
+                  </label>
+                  <label
+                    class="choice-option choice-option--checkbox"
+                    for="ai-tools-other-toggle"
+                  >
+                    <input
+                      type="checkbox"
+                      id="ai-tools-other-toggle"
+                      name="ai-tools"
+                      value="Other"
+                    />
+                    Other
+                  </label>
+                </div>
+                <div
+                  class="field ai-tools-other"
+                  id="ai-tools-other-field"
+                  data-invalid="false"
+                >
+                  <label class="field__label" for="ai-tools-other"
+                    >Other AI tool</label
+                  >
+                  <input
+                    class="field__control"
+                    type="text"
+                    id="ai-tools-other"
+                    name="ai-tools-other"
+                    placeholder="Enter the tool name"
+                    disabled
+                  />
+                  <p class="field__error">
+                    Please enter the name of the other AI tool.
+                  </p>
+                </div>
+              </fieldset>
+
+              <fieldset
+                class="field choice-fieldset"
+                id="ai-literacy-field"
+                data-invalid="false"
+              >
+                <legend>How would you rate your own AI literacy?</legend>
+                <div
+                  class="choice-options"
+                  role="radiogroup"
+                  aria-label="Self-rated AI literacy, 1 low to 5 high"
+                  aria-describedby="ai-literacy-error"
+                >
+                  <label class="choice-option"
+                    ><input
+                      type="radio"
+                      name="ai-literacy"
+                      value="1"
+                      required
+                    />
+                    1</label
+                  >
+                  <label class="choice-option"
+                    ><input
+                      type="radio"
+                      name="ai-literacy"
+                      value="2"
+                      required
+                    />
+                    2</label
+                  >
+                  <label class="choice-option"
+                    ><input
+                      type="radio"
+                      name="ai-literacy"
+                      value="3"
+                      required
+                    />
+                    3</label
+                  >
+                  <label class="choice-option"
+                    ><input
+                      type="radio"
+                      name="ai-literacy"
+                      value="4"
+                      required
+                    />
+                    4</label
+                  >
+                  <label class="choice-option"
+                    ><input
+                      type="radio"
+                      name="ai-literacy"
+                      value="5"
+                      required
+                    />
+                    5</label
+                  >
+                </div>
+                <p class="field__error" id="ai-literacy-error">
+                  Please select a rating.
+                </p>
+              </fieldset>
+
+              <fieldset
+                class="field choice-fieldset"
+                id="ai-trust-field"
+                data-invalid="false"
+              >
+                <legend>
+                  How much do you trust AI-generated recommendations?
+                </legend>
+                <div
+                  class="choice-options"
+                  role="radiogroup"
+                  aria-label="Trust in AI, 1 low to 5 high"
+                  aria-describedby="ai-trust-error"
+                >
+                  <label class="choice-option"
+                    ><input type="radio" name="ai-trust" value="1" required />
+                    1</label
+                  >
+                  <label class="choice-option"
+                    ><input type="radio" name="ai-trust" value="2" required />
+                    2</label
+                  >
+                  <label class="choice-option"
+                    ><input type="radio" name="ai-trust" value="3" required />
+                    3</label
+                  >
+                  <label class="choice-option"
+                    ><input type="radio" name="ai-trust" value="4" required />
+                    4</label
+                  >
+                  <label class="choice-option"
+                    ><input type="radio" name="ai-trust" value="5" required />
+                    5</label
+                  >
+                </div>
+                <p class="field__error" id="ai-trust-error">
+                  Please select a rating.
+                </p>
+              </fieldset>
+
+              <fieldset
+                class="field choice-fieldset"
+                id="ai-verify-comfort-field"
+                data-invalid="false"
+              >
+                <legend>
+                  How comfortable are you verifying AI-generated information?
+                </legend>
+                <div
+                  class="choice-options"
+                  role="radiogroup"
+                  aria-label="Comfort verifying AI-generated information, 1 low to 5 high"
+                  aria-describedby="ai-verify-comfort-error"
+                >
+                  <label class="choice-option"
+                    ><input
+                      type="radio"
+                      name="ai-verify-comfort"
+                      value="1"
+                      required
+                    />
+                    1</label
+                  >
+                  <label class="choice-option"
+                    ><input
+                      type="radio"
+                      name="ai-verify-comfort"
+                      value="2"
+                      required
+                    />
+                    2</label
+                  >
+                  <label class="choice-option"
+                    ><input
+                      type="radio"
+                      name="ai-verify-comfort"
+                      value="3"
+                      required
+                    />
+                    3</label
+                  >
+                  <label class="choice-option"
+                    ><input
+                      type="radio"
+                      name="ai-verify-comfort"
+                      value="4"
+                      required
+                    />
+                    4</label
+                  >
+                  <label class="choice-option"
+                    ><input
+                      type="radio"
+                      name="ai-verify-comfort"
+                      value="5"
+                      required
+                    />
+                    5</label
+                  >
+                </div>
+                <p class="field__error" id="ai-verify-comfort-error">
+                  Please select a rating.
+                </p>
+              </fieldset>
+            </div>
+          </section>
+
+          <!-- Consent -------------------------------------------------------- -->
+          <section class="form-section" aria-labelledby="consent-heading">
+            <h2 class="form-section__heading" id="consent-heading">
+              Informed consent
+            </h2>
+
+            <label class="consent-check" for="consent-checkbox">
+              <input
+                type="checkbox"
+                id="consent-checkbox"
+                name="consent"
+                required
+                aria-describedby="consent-error"
+              />
+              <span class="consent-check__text">
+                I have read and understood the information above and agree to
+                participate in this study.
+              </span>
+            </label>
+            <div class="field" id="consent-field" data-invalid="false">
+              <p class="field__error" id="consent-error">
+                Please confirm consent to continue.
+              </p>
+            </div>
+          </section>
+
+          <div class="form-actions">
+            <button
+              class="btn btn-primary"
+              type="submit"
+              id="continue-btn"
+              aria-disabled="true"
+            >
+              Continue
+            </button>
+            <p
+              class="form-status"
+              id="form-status"
+              role="status"
+              aria-live="polite"
+            >
+              Confirm consent above to continue.
+            </p>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap site-footer__inner">
+        <p>&copy; <span id="footer-year">2026</span> VERIFY-AI.</p>
+        <p>
+          Questions? <a href="tel:+2349066291084">Contact Ebine Favour O.</a>
+        </p>
+      </div>
+    </footer>
+
+    <script type="module" src="../js/participant/entry.js"></script>
+  </body>
 </html>

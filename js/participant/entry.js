@@ -42,17 +42,39 @@ import { showOverlay, initNetworkBanner } from "../utils/loading.js";
 
 const FIELD_DEFS = [
   { wrapperId: "institution-field", kind: "text", controlId: "institution" },
-  { wrapperId: "clinical-year-field", kind: "text", controlId: "clinical-year" },
-  { wrapperId: "age-field", kind: "number", controlId: "age", min: 0, max: 120 },
+  {
+    wrapperId: "clinical-year-field",
+    kind: "text",
+    controlId: "clinical-year",
+  },
+  {
+    wrapperId: "age-field",
+    kind: "number",
+    controlId: "age",
+    min: 0,
+    max: 120,
+  },
   { wrapperId: "sex-field", kind: "radio", name: "sex" },
   { wrapperId: "ai-exposure-field", kind: "radio", name: "ai-exposure" },
   { wrapperId: "ai-frequency-field", kind: "text", controlId: "ai-frequency" },
-  { wrapperId: "ai-clinical-use-field", kind: "radio", name: "ai-clinical-use" },
+  {
+    wrapperId: "ai-clinical-use-field",
+    kind: "radio",
+    name: "ai-clinical-use",
+  },
   { wrapperId: "ai-training-field", kind: "radio", name: "ai-training" },
   { wrapperId: "ai-literacy-field", kind: "radio", name: "ai-literacy" },
   { wrapperId: "ai-trust-field", kind: "radio", name: "ai-trust" },
-  { wrapperId: "ai-verify-comfort-field", kind: "radio", name: "ai-verify-comfort" },
-  { wrapperId: "consent-field", kind: "checkbox", controlId: "consent-checkbox" },
+  {
+    wrapperId: "ai-verify-comfort-field",
+    kind: "radio",
+    name: "ai-verify-comfort",
+  },
+  {
+    wrapperId: "consent-field",
+    kind: "checkbox",
+    controlId: "consent-checkbox",
+  },
 ];
 
 function getField(id) {
@@ -93,7 +115,17 @@ function isFieldSatisfied(def) {
 }
 
 function allRequiredFieldsSatisfied() {
-  return FIELD_DEFS.every(isFieldSatisfied);
+  return FIELD_DEFS.every(isFieldSatisfied) && isOtherAiToolSatisfied();
+}
+
+function isOtherAiToolSatisfied() {
+  const toggle = getField("ai-tools-other-toggle");
+  const otherTool = getField("ai-tools-other");
+  return (
+    !toggle ||
+    !toggle.checked ||
+    (otherTool && otherTool.value.trim().length > 0)
+  );
 }
 
 /** Reads a single control's current value, regardless of its kind. */
@@ -127,8 +159,15 @@ function collectParticipantData() {
 
   // Optional fields not in FIELD_DEFS (not required, but worth capturing
   // if the participant filled them in).
-  const aiTools = getField("ai-tools");
-  if (aiTools) data["ai-tools"] = aiTools.value.trim();
+  const aiTools = Array.from(
+    document.querySelectorAll('input[name="ai-tools"]:checked'),
+  ).map((input) => input.value);
+  const otherToolToggle = getField("ai-tools-other-toggle");
+  const otherTool = getField("ai-tools-other");
+  if (otherToolToggle && otherToolToggle.checked && otherTool.value.trim()) {
+    aiTools[aiTools.indexOf("Other")] = `Other: ${otherTool.value.trim()}`;
+  }
+  data["ai-tools"] = aiTools.join(", ");
 
   // Concealed allocation: resolved once here and carried with the draft.
   data.studyArm = armForInstitution(data.institution);
@@ -140,7 +179,9 @@ function collectParticipantData() {
 function setFieldValidity(def, invalid) {
   const wrapper = getField(def.wrapperId);
   if (wrapper) wrapper.setAttribute("data-invalid", String(invalid));
-  getControls(def).forEach((control) => control.setAttribute("aria-invalid", String(invalid)));
+  getControls(def).forEach((control) =>
+    control.setAttribute("aria-invalid", String(invalid)),
+  );
 }
 
 /** Validates one field and reflects the result in the UI. Returns whether it passed. */
@@ -159,6 +200,12 @@ function validateAllFields() {
     if (!satisfied && !firstInvalidDef) firstInvalidDef = def;
     if (!satisfied) allValid = false;
   });
+  const otherToolValid = isOtherAiToolSatisfied();
+  const otherToolField = getField("ai-tools-other-field");
+  if (otherToolField) {
+    otherToolField.setAttribute("data-invalid", String(!otherToolValid));
+  }
+  if (!otherToolValid) allValid = false;
   return { allValid, firstInvalidDef };
 }
 
@@ -186,7 +233,8 @@ function initLiveValidationForField(def) {
       // Only clear/re-show this field's own error as the user interacts with
       // it; don't force errors to appear on fields the user hasn't touched.
       const wrapper = getField(def.wrapperId);
-      const alreadyFlagged = wrapper && wrapper.getAttribute("data-invalid") === "true";
+      const alreadyFlagged =
+        wrapper && wrapper.getAttribute("data-invalid") === "true";
       if (alreadyFlagged || isFieldSatisfied(def)) {
         validateField(def);
       }
@@ -208,12 +256,15 @@ function initFormSubmit() {
 
     if (!allValid) {
       if (status) {
-        status.textContent = "Please complete the required fields highlighted above.";
+        status.textContent =
+          "Please complete the required fields highlighted above.";
         status.setAttribute("data-state", "");
       }
       if (firstInvalidDef) {
         const controls = getControls(firstInvalidDef);
         if (controls[0]) controls[0].focus();
+      } else {
+        getField("ai-tools-other")?.focus();
       }
       return;
     }
@@ -231,7 +282,10 @@ function initFormSubmit() {
     // one just selected here.
     const previousDraft = getParticipantDraft();
     const participantData = collectParticipantData();
-    if (previousDraft && previousDraft.institution !== participantData.institution) {
+    if (
+      previousDraft &&
+      previousDraft.institution !== participantData.institution
+    ) {
       clearStudyProgress();
     }
     saveParticipantDraft(participantData);
@@ -260,12 +314,30 @@ function initFormSubmit() {
     }
 
     // eslint-disable-next-line no-console
-    console.info("VERIFY-AI: participant draft saved locally (no Firestore write).");
+    console.info(
+      "VERIFY-AI: participant draft saved locally (no Firestore write).",
+    );
   });
 }
 
 function initLiveValidationUpdates() {
   FIELD_DEFS.forEach(initLiveValidationForField);
+}
+
+function initOtherAiToolField() {
+  const toggle = getField("ai-tools-other-toggle");
+  const otherTool = getField("ai-tools-other");
+  if (!toggle || !otherTool) return;
+
+  const updateOtherToolState = () => {
+    otherTool.disabled = !toggle.checked;
+    otherTool.required = toggle.checked;
+    otherTool.closest(".ai-tools-other").hidden = !toggle.checked;
+    if (!toggle.checked) otherTool.value = "";
+  };
+
+  toggle.addEventListener("change", updateOtherToolState);
+  updateOtherToolState();
 }
 
 function initFooterYear() {
@@ -277,6 +349,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initNetworkBanner();
   initFormSubmit();
   initLiveValidationUpdates();
+  initOtherAiToolField();
   initFooterYear();
   updateContinueButton();
 });
