@@ -55,6 +55,11 @@ const FIELD_DEFS = [
     max: 120,
   },
   { wrapperId: "sex-field", kind: "radio", name: "sex" },
+  {
+    wrapperId: "marital-status-field",
+    kind: "text",
+    controlId: "marital-status",
+  },
   { wrapperId: "ai-exposure-field", kind: "radio", name: "ai-exposure" },
   { wrapperId: "ai-frequency-field", kind: "text", controlId: "ai-frequency" },
   {

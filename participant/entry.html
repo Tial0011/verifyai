@@ -158,6 +158,28 @@
                   Please select an option.
                 </p>
               </fieldset>
+
+              <div class="field" id="marital-status-field" data-invalid="false">
+                <div class="field__label-row">
+                  <label class="field__label" for="marital-status"
+                    >Marital status</label
+                  >
+                </div>
+                <select
+                  class="field__control"
+                  id="marital-status"
+                  name="marital-status"
+                  required
+                  aria-describedby="marital-status-error"
+                >
+                  <option value="">Select an option</option>
+                  <option value="single">Single</option>
+                  <option value="married">Married</option>
+                </select>
+                <p class="field__error" id="marital-status-error">
+                  Please select your marital status.
+                </p>
+              </div>
             </div>
           </section>
 
