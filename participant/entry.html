@@ -40,6 +40,61 @@
           </p>
         </div>
 
+        <section
+          class="form-section study-expectations"
+          aria-labelledby="what-to-expect-heading"
+        >
+          <h2 class="form-section__heading" id="what-to-expect-heading">
+            What to expect
+          </h2>
+          <div class="form-section__intro">
+            <p>
+              The study takes place in a single session and consists of a series
+              of clinical vignettes designed to examine how participants make
+              clinical decisions when interacting with different forms of
+              decision support.
+            </p>
+            <p>
+              Based on randomization, you may be assigned to a study condition
+              in which you:
+            </p>
+            <ul>
+              <li>complete the clinical vignettes without AI assistance;</li>
+              <li>complete them with AI assistance; or</li>
+              <li>
+                complete them with AI assistance followed by a structured
+                verification step.
+              </li>
+            </ul>
+            <p>
+              Please do not be concerned if you do not see some of these
+              features during your session. This is intentional and is part of
+              the study design. Simply follow the instructions presented to you.
+            </p>
+            <p>
+              There is no pass mark, grade, or academic assessment. Your
+              responses will be used solely for research purposes, so please
+              answer each vignette based on your own clinical judgment and the
+              information available to you.
+            </p>
+            <p>
+              Some vignettes may cover clinical areas that you have not yet
+              formally studied in your current programme. You are not expected
+              to have prior specialist knowledge of every topic presented. Use
+              the information provided in each vignette and approach each case
+              as you would a clinical reasoning task.
+            </p>
+            <p class="approval-note study-expectations__instruction">
+              <strong
+                >Please do not search for answers or use external
+                assistance.</strong
+              >
+              Only use external assistance when the platform specifically
+              instructs you to do so.
+            </p>
+          </div>
+        </section>
+
         <form id="participant-form" novalidate>
           <!-- Participant information ------------------------------------ -->
           <section
@@ -180,6 +235,58 @@
                   Please select your marital status.
                 </p>
               </div>
+
+              <fieldset
+                class="field choice-fieldset"
+                id="clinical-rotations-field"
+                data-invalid="false"
+              >
+                <legend>
+                  Which clinical rotations have you completed or rotated
+                  through?
+                </legend>
+                <div
+                  class="choice-options"
+                  aria-label="Completed clinical rotations"
+                  aria-describedby="clinical-rotations-error"
+                >
+                  <label class="choice-option choice-option--checkbox">
+                    <input
+                      type="checkbox"
+                      name="clinical-rotations"
+                      value="Internal medicine"
+                    />
+                    Internal medicine
+                  </label>
+                  <label class="choice-option choice-option--checkbox">
+                    <input
+                      type="checkbox"
+                      name="clinical-rotations"
+                      value="Surgery"
+                    />
+                    Surgery
+                  </label>
+                  <label class="choice-option choice-option--checkbox">
+                    <input
+                      type="checkbox"
+                      name="clinical-rotations"
+                      value="Paediatrics"
+                    />
+                    Paediatrics
+                  </label>
+                  <label class="choice-option choice-option--checkbox">
+                    <input
+                      type="checkbox"
+                      name="clinical-rotations"
+                      value="Obstetrics &amp; Gynecology"
+                    />
+                    Obstetrics &amp; Gynecology
+                  </label>
+                </div>
+                <p class="field__error" id="clinical-rotations-error">
+                  Please select at least one clinical rotation.
+                </p>
+              </fieldset>
             </div>
           </section>
 

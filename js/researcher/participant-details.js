@@ -41,11 +41,14 @@ function notRecorded() {
 }
 
 function val(value) {
-  return value === null || value === undefined || value === "" ? notRecorded() : escapeHtml(value);
+  return value === null || value === undefined || value === ""
+    ? notRecorded()
+    : escapeHtml(value);
 }
 
 function renderInfoGrid(p) {
   const university = INSTITUTION_LABELS[p.university] || p.university;
+  const entry = p.participantInformation || {};
   const submitted = (p.timestamps && p.timestamps.submittedAt) || p.createdAt;
   // Three durations, not one — they answer different questions and can
   // differ noticeably for the same participant. See js/utils/duration.js
@@ -57,6 +60,20 @@ function renderInfoGrid(p) {
   const rows = [
     ["Participant ID", p.participantId || p.id],
     ["University", university],
+    ["Clinical year", entry["clinical-year"]],
+    ["Age", entry.age],
+    ["Sex", entry.sex],
+    ["Marital status", entry["marital-status"]],
+    ["Clinical rotations", entry["clinical-rotations"]],
+    ["Previous AI use", entry["ai-exposure"]],
+    ["AI use frequency", entry["ai-frequency"]],
+    ["Clinical/medical AI use", entry["ai-clinical-use"]],
+    ["Formal AI training", entry["ai-training"]],
+    ["AI tools used", entry["ai-tools"]],
+    ["AI literacy", entry["ai-literacy"]],
+    ["Trust in AI recommendations", entry["ai-trust"]],
+    ["Comfort verifying AI information", entry["ai-verify-comfort"]],
+    ["Consent given", p.consent ? "Yes" : "No"],
     ["Study condition", armLabel(p.studyCondition)],
     ["Submission date", formatDate(submitted)],
     ["Submission time", formatTime(submitted)],
@@ -66,12 +83,18 @@ function renderInfoGrid(p) {
     ["Active time on questions", formatDuration(activeSeconds)],
   ];
   document.getElementById("participant-info-grid").innerHTML = rows
-    .map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${val(value)}</dd></div>`)
+    .map(
+      ([label, value]) =>
+        `<div><dt>${escapeHtml(label)}</dt><dd>${val(value)}</dd></div>`,
+    )
     .join("");
 }
 
 function answerChangedLabel(response) {
-  if (response.answerChangedAfterAi === null || response.answerChangedAfterAi === undefined) {
+  if (
+    response.answerChangedAfterAi === null ||
+    response.answerChangedAfterAi === undefined
+  ) {
     return notRecorded();
   }
   return response.answerChangedAfterAi ? "Yes" : "No";
@@ -110,7 +133,9 @@ function timingBlockHtml(response) {
 
 function aiBlockHtml(response) {
   if (!response.aiSuggestionShown) return "";
-  const suggestion = response.aiSuggestion ? response.aiSuggestion.optionLabel : null;
+  const suggestion = response.aiSuggestion
+    ? response.aiSuggestion.optionLabel
+    : null;
   return `
     <div>
       <p class="r-subsection-title">AI information</p>
@@ -126,11 +151,12 @@ function aiBlockHtml(response) {
         <div class="r-answer-box">
           <p class="r-answer-box__label">Final matches AI suggestion</p>
           <p class="r-answer-box__value">${
-            response.answerMatchesAiSuggestion === null || response.answerMatchesAiSuggestion === undefined
+            response.answerMatchesAiSuggestion === null ||
+            response.answerMatchesAiSuggestion === undefined
               ? notRecorded()
               : response.answerMatchesAiSuggestion
-              ? "Yes"
-              : "No"
+                ? "Yes"
+                : "No"
           }</p>
         </div>
       </div>
@@ -218,7 +244,9 @@ function questionCardHtml(question, index, response) {
           <div class="r-answer-box">
             <p class="r-answer-box__label">Confidence</p>
             <p class="r-answer-box__value">${
-              typeof response.confidence === "number" ? `${response.confidence} / 5` : notRecorded()
+              typeof response.confidence === "number"
+                ? `${response.confidence} / 5`
+                : notRecorded()
             }</p>
           </div>
         </div>
@@ -233,7 +261,9 @@ function questionCardHtml(question, index, response) {
 function renderQuestions(p) {
   const responses = Array.isArray(p.studyResponses) ? p.studyResponses : [];
   const container = document.getElementById("questions-container");
-  container.innerHTML = QUESTIONS.map((q, idx) => questionCardHtml(q, idx, responses[idx])).join("");
+  container.innerHTML = QUESTIONS.map((q, idx) =>
+    questionCardHtml(q, idx, responses[idx]),
+  ).join("");
 }
 
 async function loadParticipant(id) {
@@ -270,7 +300,9 @@ async function init() {
     document.getElementById("participant-heading").textContent =
       participant.participantId || participant.id;
     document.getElementById("participant-subheading").textContent = `${
-      INSTITUTION_LABELS[participant.university] || participant.university || "Unknown site"
+      INSTITUTION_LABELS[participant.university] ||
+      participant.university ||
+      "Unknown site"
     } · ${armLabel(participant.studyCondition)} · ${
       participant.questionsCompleted || 0
     }/${participant.questionsTotal || TOTAL_QUESTIONS} questions completed`;

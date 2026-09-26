@@ -78,8 +78,17 @@ import {
   normalizeArm,
 } from "../participant/study-arm.js";
 import { STEPS as VERIFY_STEPS } from "../participant/verify-workflow.js";
-import { toDate, questionTimings, answerMomentFor, completionStatus } from "./format.js";
-import { deriveDurations, formatDuration, toMinutes } from "../utils/duration.js";
+import {
+  toDate,
+  questionTimings,
+  answerMomentFor,
+  completionStatus,
+} from "./format.js";
+import {
+  deriveDurations,
+  formatDuration,
+  toMinutes,
+} from "../utils/duration.js";
 
 function csvField(value) {
   if (value === null || value === undefined) return "";
@@ -105,11 +114,15 @@ function isoOrBlank(value) {
 }
 
 function universityLabel(participant) {
-  return INSTITUTION_LABELS[participant.university] || participant.university || "";
+  return (
+    INSTITUTION_LABELS[participant.university] || participant.university || ""
+  );
 }
 
 function responseFor(participant, questionIndex) {
-  const responses = Array.isArray(participant.studyResponses) ? participant.studyResponses : [];
+  const responses = Array.isArray(participant.studyResponses)
+    ? participant.studyResponses
+    : [];
   return responses[questionIndex] || null;
 }
 
@@ -121,12 +134,14 @@ function answeredAtFor(response) {
 }
 
 function verifyStepValue(response, stepKey) {
-  const entry = response && response.verifyResponses && response.verifyResponses[stepKey];
+  const entry =
+    response && response.verifyResponses && response.verifyResponses[stepKey];
   return entry ? entry.value : "";
 }
 
 function verifyStepNote(response, stepKey) {
-  const entry = response && response.verifyResponses && response.verifyResponses[stepKey];
+  const entry =
+    response && response.verifyResponses && response.verifyResponses[stepKey];
   return entry ? entry.note : "";
 }
 
@@ -158,7 +173,11 @@ export function columnPlan(participants, options = {}) {
   const applicableOnly = options.applicableColumnsOnly !== false;
 
   const arms = Array.from(
-    new Set((participants || []).map((p) => normalizeArm(p.studyCondition)).filter(Boolean))
+    new Set(
+      (participants || [])
+        .map((p) => normalizeArm(p.studyCondition))
+        .filter(Boolean),
+    ),
   );
 
   const includeAi = !applicableOnly || arms.some(armShowsAi);
@@ -183,7 +202,8 @@ export function columnPlan(participants, options = {}) {
  * so the file is legible without a formula.
  */
 function durationColumns(participant) {
-  const { totalSeconds, assessmentSeconds, activeSeconds } = deriveDurations(participant);
+  const { totalSeconds, assessmentSeconds, activeSeconds } =
+    deriveDurations(participant);
   const ts = participant.timestamps || {};
 
   return {
@@ -191,10 +211,13 @@ function durationColumns(participant) {
     assessment_started_at: isoOrBlank(ts.assessmentStartedAt),
     assessment_completed_at: isoOrBlank(ts.assessmentCompletedAt),
     total_duration_seconds: totalSeconds ?? "",
-    total_duration_minutes: totalSeconds === null ? "" : toMinutes(totalSeconds),
-    total_duration_display: totalSeconds === null ? "" : formatDuration(totalSeconds),
+    total_duration_minutes:
+      totalSeconds === null ? "" : toMinutes(totalSeconds),
+    total_duration_display:
+      totalSeconds === null ? "" : formatDuration(totalSeconds),
     assessment_duration_seconds: assessmentSeconds ?? "",
-    assessment_duration_minutes: assessmentSeconds === null ? "" : toMinutes(assessmentSeconds),
+    assessment_duration_minutes:
+      assessmentSeconds === null ? "" : toMinutes(assessmentSeconds),
     active_question_time_seconds: activeSeconds ?? "",
   };
 }
@@ -226,21 +249,171 @@ function durationColumns(participant) {
 /** Fields with one value per participant — the Participant Summary's
  * leading columns. */
 export const SUMMARY_PARTICIPANT_FIELDS = [
-  { key: "participant_id", label: "Participant ID", section: "Identification", group: "core", locked: true },
-  { key: "university", label: "University", section: "Identification", group: "core" },
-  { key: "study_condition", label: "Study condition", section: "Identification", group: "core" },
-  { key: "submission_date", label: "Submission date", section: "Submission", group: "core" },
-  { key: "submission_timestamp", label: "Submission timestamp", section: "Submission", group: "core" },
-  { key: "completion_status", label: "Completion status", section: "Submission", group: "core" },
-  { key: "entered_at", label: "Entered study at", section: "Session timing", group: "core" },
-  { key: "assessment_started_at", label: "Assessment started at", section: "Session timing", group: "core" },
-  { key: "assessment_completed_at", label: "Assessment completed at", section: "Session timing", group: "core" },
-  { key: "total_duration_seconds", label: "Total time (seconds)", section: "Session timing", group: "core" },
-  { key: "total_duration_minutes", label: "Total time (minutes)", section: "Session timing", group: "core" },
-  { key: "total_duration_display", label: "Total time (readable, e.g. 6m 12s)", section: "Session timing", group: "core" },
-  { key: "assessment_duration_seconds", label: "Assessment time (seconds)", section: "Session timing", group: "core" },
-  { key: "assessment_duration_minutes", label: "Assessment time (minutes)", section: "Session timing", group: "core" },
-  { key: "active_question_time_seconds", label: "Active time on questions (seconds)", section: "Session timing", group: "core" },
+  {
+    key: "participant_id",
+    label: "Participant ID",
+    section: "Identification",
+    group: "core",
+    locked: true,
+  },
+  {
+    key: "university",
+    label: "University",
+    section: "Identification",
+    group: "core",
+  },
+  {
+    key: "clinical_year",
+    label: "Clinical year",
+    section: "Participant entry",
+    group: "core",
+  },
+  { key: "age", label: "Age", section: "Participant entry", group: "core" },
+  { key: "sex", label: "Sex", section: "Participant entry", group: "core" },
+  {
+    key: "marital_status",
+    label: "Marital status",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "clinical_rotations",
+    label: "Clinical rotations",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "ai_exposure",
+    label: "Previous AI use",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "ai_frequency",
+    label: "AI use frequency",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "ai_clinical_use",
+    label: "Clinical/medical AI use",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "ai_training",
+    label: "Formal AI training",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "ai_tools",
+    label: "AI tools used",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "ai_literacy",
+    label: "AI literacy",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "ai_trust",
+    label: "Trust in AI recommendations",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "ai_verify_comfort",
+    label: "Comfort verifying AI information",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "consent",
+    label: "Consent given",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "study_condition",
+    label: "Study condition",
+    section: "Identification",
+    group: "core",
+  },
+  {
+    key: "submission_date",
+    label: "Submission date",
+    section: "Submission",
+    group: "core",
+  },
+  {
+    key: "submission_timestamp",
+    label: "Submission timestamp",
+    section: "Submission",
+    group: "core",
+  },
+  {
+    key: "completion_status",
+    label: "Completion status",
+    section: "Submission",
+    group: "core",
+  },
+  {
+    key: "entered_at",
+    label: "Entered study at",
+    section: "Session timing",
+    group: "core",
+  },
+  {
+    key: "assessment_started_at",
+    label: "Assessment started at",
+    section: "Session timing",
+    group: "core",
+  },
+  {
+    key: "assessment_completed_at",
+    label: "Assessment completed at",
+    section: "Session timing",
+    group: "core",
+  },
+  {
+    key: "total_duration_seconds",
+    label: "Total time (seconds)",
+    section: "Session timing",
+    group: "core",
+  },
+  {
+    key: "total_duration_minutes",
+    label: "Total time (minutes)",
+    section: "Session timing",
+    group: "core",
+  },
+  {
+    key: "total_duration_display",
+    label: "Total time (readable, e.g. 6m 12s)",
+    section: "Session timing",
+    group: "core",
+  },
+  {
+    key: "assessment_duration_seconds",
+    label: "Assessment time (seconds)",
+    section: "Session timing",
+    group: "core",
+  },
+  {
+    key: "assessment_duration_minutes",
+    label: "Assessment time (minutes)",
+    section: "Session timing",
+    group: "core",
+  },
+  {
+    key: "active_question_time_seconds",
+    label: "Active time on questions (seconds)",
+    section: "Session timing",
+    group: "core",
+  },
 ];
 
 /** Fields with one value per question. In the Participant Summary each
@@ -248,18 +421,68 @@ export const SUMMARY_PARTICIPANT_FIELDS = [
  * each is a single column, since a row IS one question. Shared between
  * the two exports so the picker means the same thing in both. */
 export const QUESTION_FIELDS = [
-  { key: "initial_response", label: "Initial response (before AI shown)", section: "Responses", group: "ai" },
-  { key: "final_response", label: "Final response", section: "Responses", group: "core" },
-  { key: "answer_changed", label: "Answer changed after AI", section: "Responses", group: "ai" },
-  { key: "confidence", label: "Confidence (1–5)", section: "Responses", group: "core" },
-  { key: "started_at", label: "Question started at", section: "Question timing", group: "core" },
-  { key: "answered_at", label: "Answer selected at", section: "Question timing", group: "core" },
-  { key: "completed_at", label: "Question completed at", section: "Question timing", group: "core" },
-  { key: "time_to_initial_answer_seconds", label: "Time to initial answer (seconds)", section: "Question timing", group: "ai" },
-  { key: "total_question_time_seconds", label: "Total question time (seconds)", section: "Question timing", group: "core" },
+  {
+    key: "initial_response",
+    label: "Initial response (before AI shown)",
+    section: "Responses",
+    group: "ai",
+  },
+  {
+    key: "final_response",
+    label: "Final response",
+    section: "Responses",
+    group: "core",
+  },
+  {
+    key: "answer_changed",
+    label: "Answer changed after AI",
+    section: "Responses",
+    group: "ai",
+  },
+  {
+    key: "confidence",
+    label: "Confidence (1–5)",
+    section: "Responses",
+    group: "core",
+  },
+  {
+    key: "started_at",
+    label: "Question started at",
+    section: "Question timing",
+    group: "core",
+  },
+  {
+    key: "answered_at",
+    label: "Answer selected at",
+    section: "Question timing",
+    group: "core",
+  },
+  {
+    key: "completed_at",
+    label: "Question completed at",
+    section: "Question timing",
+    group: "core",
+  },
+  {
+    key: "time_to_initial_answer_seconds",
+    label: "Time to initial answer (seconds)",
+    section: "Question timing",
+    group: "ai",
+  },
+  {
+    key: "total_question_time_seconds",
+    label: "Total question time (seconds)",
+    section: "Question timing",
+    group: "core",
+  },
   { key: "ai_shown", label: "AI suggestion shown", section: "AI", group: "ai" },
   { key: "ai_suggestion", label: "AI suggestion", section: "AI", group: "ai" },
-  { key: "answer_matches_ai", label: "Final answer matches AI", section: "AI", group: "ai" },
+  {
+    key: "answer_matches_ai",
+    label: "Final answer matches AI",
+    section: "AI",
+    group: "ai",
+  },
   // One entry per VERIFY-AI step, in the order the participant completes
   // them. Two of the six steps ask for a free-text note as well; that
   // note column sits immediately after its own step rather than being
@@ -291,17 +514,133 @@ export const QUESTION_FIELDS = [
 
 /** Participant-level fields carried on every Response-Level row. */
 export const RESPONSE_PARTICIPANT_FIELDS = [
-  { key: "participant_id", label: "Participant ID", section: "Identification", group: "core", locked: true },
-  { key: "university", label: "University", section: "Identification", group: "core" },
-  { key: "study_condition", label: "Study condition", section: "Identification", group: "core" },
+  {
+    key: "participant_id",
+    label: "Participant ID",
+    section: "Identification",
+    group: "core",
+    locked: true,
+  },
+  {
+    key: "university",
+    label: "University",
+    section: "Identification",
+    group: "core",
+  },
+  {
+    key: "clinical_year",
+    label: "Clinical year",
+    section: "Participant entry",
+    group: "core",
+  },
+  { key: "age", label: "Age", section: "Participant entry", group: "core" },
+  { key: "sex", label: "Sex", section: "Participant entry", group: "core" },
+  {
+    key: "marital_status",
+    label: "Marital status",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "clinical_rotations",
+    label: "Clinical rotations",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "ai_exposure",
+    label: "Previous AI use",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "ai_frequency",
+    label: "AI use frequency",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "ai_clinical_use",
+    label: "Clinical/medical AI use",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "ai_training",
+    label: "Formal AI training",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "ai_tools",
+    label: "AI tools used",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "ai_literacy",
+    label: "AI literacy",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "ai_trust",
+    label: "Trust in AI recommendations",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "ai_verify_comfort",
+    label: "Comfort verifying AI information",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "consent",
+    label: "Consent given",
+    section: "Participant entry",
+    group: "core",
+  },
+  {
+    key: "study_condition",
+    label: "Study condition",
+    section: "Identification",
+    group: "core",
+  },
   // Carried on every row so a per-response model can control for how
   // long the participant took overall without a join back to the
   // summary file.
-  { key: "participant_total_duration_seconds", label: "Participant total time (seconds)", section: "Session timing", group: "core" },
-  { key: "participant_assessment_duration_seconds", label: "Participant assessment time (seconds)", section: "Session timing", group: "core" },
-  { key: "question_number", label: "Question number", section: "Question identification", group: "core", locked: true },
-  { key: "question_id", label: "Question ID", section: "Question identification", group: "core" },
-  { key: "scenario_id", label: "Scenario ID", section: "Question identification", group: "core" },
+  {
+    key: "participant_total_duration_seconds",
+    label: "Participant total time (seconds)",
+    section: "Session timing",
+    group: "core",
+  },
+  {
+    key: "participant_assessment_duration_seconds",
+    label: "Participant assessment time (seconds)",
+    section: "Session timing",
+    group: "core",
+  },
+  {
+    key: "question_number",
+    label: "Question number",
+    section: "Question identification",
+    group: "core",
+    locked: true,
+  },
+  {
+    key: "question_id",
+    label: "Question ID",
+    section: "Question identification",
+    group: "core",
+  },
+  {
+    key: "scenario_id",
+    label: "Scenario ID",
+    section: "Question identification",
+    group: "core",
+  },
 ];
 
 /**
@@ -320,12 +659,16 @@ function fieldExcluded(field, excluded) {
 }
 
 function includedFields(fields, plan, excluded) {
-  return fields.filter((f) => fieldApplies(f, plan) && !fieldExcluded(f, excluded));
+  return fields.filter(
+    (f) => fieldApplies(f, plan) && !fieldExcluded(f, excluded),
+  );
 }
 
 /** Normalizes the excludedFields option into a Set. */
 function excludedSet(options) {
-  return new Set(Array.isArray(options.excludedFields) ? options.excludedFields : []);
+  return new Set(
+    Array.isArray(options.excludedFields) ? options.excludedFields : [],
+  );
 }
 
 /**
@@ -354,11 +697,17 @@ export function fieldCatalogue(kind, plan, options = {}) {
       ...field,
       selected: !fieldExcluded(field, excluded),
       // Per-question fields become 8 columns each in the summary export.
-      columnsEach: kind === "summary" && QUESTION_FIELDS.includes(field) ? TOTAL_QUESTIONS : 1,
+      columnsEach:
+        kind === "summary" && QUESTION_FIELDS.includes(field)
+          ? TOTAL_QUESTIONS
+          : 1,
     });
   });
 
-  return Array.from(sections.entries()).map(([title, items]) => ({ title, fields: items }));
+  return Array.from(sections.entries()).map(([title, items]) => ({
+    title,
+    fields: items,
+  }));
 }
 
 /* --------------------------------------------------------------------
@@ -374,12 +723,16 @@ export function fieldCatalogue(kind, plan, options = {}) {
 export function summaryHeaders(plan, options = {}) {
   const excluded = excludedSet(options);
 
-  const headers = includedFields(SUMMARY_PARTICIPANT_FIELDS, plan, excluded).map((f) => f.key);
+  const headers = includedFields(
+    SUMMARY_PARTICIPANT_FIELDS,
+    plan,
+    excluded,
+  ).map((f) => f.key);
 
   const perQuestion = includedFields(
     QUESTION_FIELDS.filter((f) => !f.responseLevelOnly),
     plan,
-    excluded
+    excluded,
   );
 
   for (let i = 1; i <= TOTAL_QUESTIONS; i += 1) {
@@ -394,12 +747,31 @@ export function buildSummaryCsv(participants, options = {}) {
   const headers = summaryHeaders(plan, options);
 
   const rows = participants.map((p) => {
+    const entry = p.participantInformation || {};
     const row = {
       participant_id: p.participantId || p.id || "",
       university: universityLabel(p),
+      clinical_year: entry["clinical-year"] || "",
+      age: entry.age ?? "",
+      sex: entry.sex || "",
+      marital_status: entry["marital-status"] || "",
+      clinical_rotations: entry["clinical-rotations"] || "",
+      ai_exposure: entry["ai-exposure"] || "",
+      ai_frequency: entry["ai-frequency"] || "",
+      ai_clinical_use: entry["ai-clinical-use"] || "",
+      ai_training: entry["ai-training"] || "",
+      ai_tools: entry["ai-tools"] || "",
+      ai_literacy: entry["ai-literacy"] || "",
+      ai_trust: entry["ai-trust"] || "",
+      ai_verify_comfort: entry["ai-verify-comfort"] || "",
+      consent: yesNo(p.consent),
       study_condition: p.studyCondition || "",
-      submission_date: isoOrBlank(p.timestamps && p.timestamps.submittedAt).slice(0, 10),
-      submission_timestamp: isoOrBlank(p.timestamps && p.timestamps.submittedAt),
+      submission_date: isoOrBlank(
+        p.timestamps && p.timestamps.submittedAt,
+      ).slice(0, 10),
+      submission_timestamp: isoOrBlank(
+        p.timestamps && p.timestamps.submittedAt,
+      ),
       completion_status: completionStatus(p),
       ...durationColumns(p),
     };
@@ -410,7 +782,8 @@ export function buildSummaryCsv(participants, options = {}) {
       const timing = questionTimings(r);
 
       row[`q${i}_final_response`] = r ? r.finalAnswerLabel || "" : "";
-      row[`q${i}_confidence`] = r && typeof r.confidence === "number" ? r.confidence : "";
+      row[`q${i}_confidence`] =
+        r && typeof r.confidence === "number" ? r.confidence : "";
       row[`q${i}_started_at`] = r ? isoOrBlank(r.startedAt) : "";
       row[`q${i}_answered_at`] = r ? isoOrBlank(answeredAtFor(r)) : "";
       row[`q${i}_completed_at`] = r ? isoOrBlank(r.submittedAt) : "";
@@ -419,10 +792,14 @@ export function buildSummaryCsv(participants, options = {}) {
       if (plan.includeAi) {
         row[`q${i}_initial_response`] = r ? r.initialAnswerLabel || "" : "";
         row[`q${i}_answer_changed`] = r ? yesNo(r.answerChangedAfterAi) : "";
-        row[`q${i}_time_to_initial_answer_seconds`] = timing.timeToInitialAnswer ?? "";
+        row[`q${i}_time_to_initial_answer_seconds`] =
+          timing.timeToInitialAnswer ?? "";
         row[`q${i}_ai_shown`] = r ? yesNo(Boolean(r.aiSuggestionShown)) : "";
-        row[`q${i}_ai_suggestion`] = r && r.aiSuggestion ? r.aiSuggestion.optionLabel || "" : "";
-        row[`q${i}_answer_matches_ai`] = r ? yesNo(r.answerMatchesAiSuggestion) : "";
+        row[`q${i}_ai_suggestion`] =
+          r && r.aiSuggestion ? r.aiSuggestion.optionLabel || "" : "";
+        row[`q${i}_answer_matches_ai`] = r
+          ? yesNo(r.answerMatchesAiSuggestion)
+          : "";
       }
 
       if (plan.includeVerify) {
@@ -448,7 +825,9 @@ export function buildSummaryCsv(participants, options = {}) {
 export function responseLevelHeaders(plan, options = {}) {
   const excluded = excludedSet(options);
   return [
-    ...includedFields(RESPONSE_PARTICIPANT_FIELDS, plan, excluded).map((f) => f.key),
+    ...includedFields(RESPONSE_PARTICIPANT_FIELDS, plan, excluded).map(
+      (f) => f.key,
+    ),
     ...includedFields(QUESTION_FIELDS, plan, excluded).map((f) => f.key),
   ];
 }
@@ -461,6 +840,7 @@ export function buildResponseLevelCsv(participants, options = {}) {
 
   participants.forEach((p) => {
     const durations = deriveDurations(p);
+    const entry = p.participantInformation || {};
 
     QUESTIONS.forEach((q, idx) => {
       const r = responseFor(p, idx);
@@ -469,9 +849,24 @@ export function buildResponseLevelCsv(participants, options = {}) {
       const row = {
         participant_id: p.participantId || p.id || "",
         university: universityLabel(p),
+        clinical_year: entry["clinical-year"] || "",
+        age: entry.age ?? "",
+        sex: entry.sex || "",
+        marital_status: entry["marital-status"] || "",
+        clinical_rotations: entry["clinical-rotations"] || "",
+        ai_exposure: entry["ai-exposure"] || "",
+        ai_frequency: entry["ai-frequency"] || "",
+        ai_clinical_use: entry["ai-clinical-use"] || "",
+        ai_training: entry["ai-training"] || "",
+        ai_tools: entry["ai-tools"] || "",
+        ai_literacy: entry["ai-literacy"] || "",
+        ai_trust: entry["ai-trust"] || "",
+        ai_verify_comfort: entry["ai-verify-comfort"] || "",
+        consent: yesNo(p.consent),
         study_condition: p.studyCondition || "",
         participant_total_duration_seconds: durations.totalSeconds ?? "",
-        participant_assessment_duration_seconds: durations.assessmentSeconds ?? "",
+        participant_assessment_duration_seconds:
+          durations.assessmentSeconds ?? "",
         question_number: idx + 1,
         question_id: q.id,
         scenario_id: q.scenarioId,
@@ -488,7 +883,8 @@ export function buildResponseLevelCsv(participants, options = {}) {
         row.answer_changed = r ? yesNo(r.answerChangedAfterAi) : "";
         row.time_to_initial_answer_seconds = timing.timeToInitialAnswer ?? "";
         row.ai_shown = r ? yesNo(Boolean(r.aiSuggestionShown)) : "";
-        row.ai_suggestion = r && r.aiSuggestion ? r.aiSuggestion.optionLabel || "" : "";
+        row.ai_suggestion =
+          r && r.aiSuggestion ? r.aiSuggestion.optionLabel || "" : "";
         row.answer_matches_ai = r ? yesNo(r.answerMatchesAiSuggestion) : "";
       }
 
@@ -497,7 +893,9 @@ export function buildResponseLevelCsv(participants, options = {}) {
         row.verify_examine = r ? verifyStepValue(r, "examine") : "";
         row.verify_review = r ? verifyStepValue(r, "review") : "";
         row.verify_review_note = r ? verifyStepNote(r, "review") : "";
-        row.verify_independently_compare = r ? verifyStepValue(r, "independentlyCompare") : "";
+        row.verify_independently_compare = r
+          ? verifyStepValue(r, "independentlyCompare")
+          : "";
         row.verify_flag = r ? verifyStepValue(r, "flag") : "";
         row.verify_flag_note = r ? verifyStepNote(r, "flag") : "";
         row.verify_yield = r ? verifyStepValue(r, "yield") : "";
@@ -523,7 +921,9 @@ export function describeExport(participants, options = {}) {
     ...plan,
     summaryColumns: summaryHeaders(plan, options).length,
     responseLevelColumns: responseLevelHeaders(plan, options).length,
-    excludedFields: Array.isArray(options.excludedFields) ? options.excludedFields.length : 0,
+    excludedFields: Array.isArray(options.excludedFields)
+      ? options.excludedFields.length
+      : 0,
   };
 }
 

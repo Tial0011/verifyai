@@ -60,6 +60,11 @@ const FIELD_DEFS = [
     kind: "text",
     controlId: "marital-status",
   },
+  {
+    wrapperId: "clinical-rotations-field",
+    kind: "checkbox-group",
+    name: "clinical-rotations",
+  },
   { wrapperId: "ai-exposure-field", kind: "radio", name: "ai-exposure" },
   { wrapperId: "ai-frequency-field", kind: "text", controlId: "ai-frequency" },
   {
@@ -88,7 +93,7 @@ function getField(id) {
 
 /** Returns the control element(s) relevant to a field definition. */
 function getControls(def) {
-  if (def.kind === "radio") {
+  if (def.kind === "radio" || def.kind === "checkbox-group") {
     return Array.from(document.querySelectorAll(`input[name="${def.name}"]`));
   }
   const el = getField(def.controlId);
@@ -104,6 +109,9 @@ function isFieldSatisfied(def) {
     return controls[0].checked;
   }
   if (def.kind === "radio") {
+    return controls.some((input) => input.checked);
+  }
+  if (def.kind === "checkbox-group") {
     return controls.some((input) => input.checked);
   }
   if (def.kind === "number") {
@@ -141,6 +149,11 @@ function readControlValue(def) {
   if (def.kind === "radio") {
     const checked = controls.find((input) => input.checked);
     return checked ? checked.value : null;
+  }
+  if (def.kind === "checkbox-group") {
+    return controls
+      .filter((input) => input.checked)
+      .map((input) => input.value);
   }
   if (def.kind === "number") {
     const raw = controls[0].value.trim();
