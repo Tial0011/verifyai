@@ -84,6 +84,61 @@
   margin-top: 1rem;
 }
 
+/* What to expect — overview ---------------------------------------------- */
+
+.expectation-overview {
+  padding-bottom: clamp(1.75rem, 4vw, 2.5rem);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.expectation-overview__lede {
+  font-size: var(--step-1);
+  color: var(--color-ink);
+  line-height: 1.5;
+}
+
+.condition-list {
+  display: grid;
+  gap: 0.65rem;
+  margin: 1.25rem 0 1.5rem;
+  padding: 0;
+  list-style: none;
+  counter-reset: condition;
+}
+
+.condition-list li {
+  counter-increment: condition;
+  position: relative;
+  padding: 0.85rem 1rem 0.85rem 3.25rem;
+  color: var(--color-ink);
+  background: var(--color-surface);
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.condition-list li::before {
+  content: counter(condition, decimal-leading-zero);
+  position: absolute;
+  left: 1rem;
+  color: var(--color-accent);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+}
+
+.landing-expectations__instruction {
+  margin-top: 1.5rem;
+  margin-bottom: 0;
+}
+
+.expectation-steps-heading {
+  margin-top: clamp(1.75rem, 4vw, 2.5rem);
+  font-family: var(--font-body);
+  font-size: var(--step-0);
+  font-weight: 600;
+  color: var(--color-ink);
+  letter-spacing: 0;
+}
+
 /* What to expect — steps ------------------------------------------------ */
 
 .steps {
