@@ -28,16 +28,70 @@
         </a>
       </div>
     </header>
-              <li>complete the clinical vignettes without AI assistance</li>
-              <li>complete them with AI assistance or</li>
+
+    <main id="main" class="entry-main">
       <div class="wrap">
-                complete them with AI assistance followed by a structured verification step.
+        <div class="entry-intro">
+          <p class="entry-intro__eyebrow">Participant entry</p>
           <h1>Before you begin</h1>
           <p>
             Please provide the information requested below and review the
             consent information before continuing to the study.
           </p>
         </div>
+
+        <section
+          class="form-section study-expectations"
+          aria-labelledby="what-to-expect-heading"
+        >
+          <h2 class="form-section__heading" id="what-to-expect-heading">
+            What to expect
+          </h2>
+          <div class="form-section__intro">
+            <p>
+              The study takes place in a single session and consists of a series
+              of clinical vignettes designed to examine how participants make
+              clinical decisions when interacting with different forms of
+              decision support.
+            </p>
+            <p>
+              Based on randomization, you may be assigned to a study condition
+              in which you:
+            </p>
+            <ul>
+              <li>complete the clinical vignettes without AI assistance;</li>
+              <li>complete them with AI assistance; or</li>
+              <li>
+                complete them with AI assistance followed by a structured
+                verification step.
+              </li>
+            </ul>
+            <p>
+              Please do not be concerned if you do not see some of these
+              features during your session. This is intentional and is part of
+              the study design. Simply follow the instructions presented to you.
+            </p>
+            <p>
+              There is no pass mark, grade, or academic assessment. Your
+              responses will be used solely for research purposes, so please
+              answer each vignette based on your own clinical judgement and the
+              information available to you.
+            </p>
+            <p>
+              Some vignettes may cover clinical areas that you have not yet
+              formally studied in your current programme. You are not expected
+              to have prior specialist knowledge of every topic presented. Use
+              the information provided in each vignette and approach each case
+              as you would a clinical reasoning task.
+            </p>
+            <p class="approval-note study-expectations__instruction">
+              <strong>
+                Please do not search for answers or use external assistance
+                unless the platform specifically instructs you to do so.
+              </strong>
+            </p>
+          </div>
+        </section>
 
         <form id="participant-form" novalidate>
           <!-- Participant information ------------------------------------ -->
@@ -46,6 +100,58 @@
             aria-labelledby="participant-info-heading"
           >
             <h2 class="form-section__heading" id="participant-info-heading">
+              Participant information
+            </h2>
+
+            <div class="form-section__fields">
+              <div class="field" id="institution-field" data-invalid="false">
+                <div class="field__label-row">
+                  <label class="field__label" for="institution"
+                    >Institution / university</label
+                  >
+                </div>
+                <select
+                  class="field__control"
+                  id="institution"
+                  name="institution"
+                  autocomplete="organization"
+                  required
+                  aria-describedby="institution-error"
+                >
+                  <option value="">Select an option</option>
+                  <option value="university-of-medical-sciences-ondo">
+                    University of Medical Sciences, Ondo
+                  </option>
+                  <option value="babcock-university-ilishan-remo">
+                    Babcock University, Ilishan-Remo
+                  </option>
+                  <option value="university-of-ibadan">
+                    University of Ibadan, Oyo State
+                  </option>
+                </select>
+                <p class="field__error" id="institution-error">
+                  Please select your institution.
+                </p>
+              </div>
+
+              <div class="field" id="clinical-year-field" data-invalid="false">
+                <div class="field__label-row">
+                  <label class="field__label" for="clinical-year"
+                    >Clinical year</label
+                  >
+                </div>
+                <select
+                  class="field__control"
+                  id="clinical-year"
+                  name="clinical-year"
+                  required
+                  aria-describedby="clinical-year-error"
+                >
+                  <option value="">Select an option</option>
+                  <option value="400lvl">400lvl</option>
+                  <option value="500lvl">500lvl</option>
+                  <option value="600lvl">600lvl</option>
+                </select>
                 <p class="field__error" id="clinical-year-error">
                   Please select your clinical year.
                 </p>
@@ -547,6 +653,13 @@
               </fieldset>
             </div>
           </section>
+
+          <p class="approval-note entry-reminder">
+            <strong>
+              Please do not search for answers or use external assistance
+              unless the platform specifically instructs you to do so.
+            </strong>
+          </p>
 
           <!-- Consent -------------------------------------------------------- -->
           <section class="form-section" aria-labelledby="consent-heading">

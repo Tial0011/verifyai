@@ -220,7 +220,7 @@ textarea.field__control {
 .choice-option--checkbox input {
   appearance: none;
   border: 1px solid var(--color-line-strong);
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   background: var(--color-surface);
   display: grid;
   place-content: center;
@@ -228,16 +228,22 @@ textarea.field__control {
 
 .choice-option--checkbox input::before {
   content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--color-ink);
-  transform: scale(0);
+  width: 7px;
+  height: 4px;
+  border-right: 2px solid var(--color-surface);
+  border-bottom: 2px solid var(--color-surface);
+  transform: translateY(-1px) rotate(45deg) scale(0);
+  transform-origin: center;
   transition: transform 120ms ease-in-out;
 }
 
+.choice-option--checkbox input:checked {
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+}
+
 .choice-option--checkbox input:checked::before {
-  transform: scale(1);
+  transform: translateY(-1px) rotate(45deg) scale(1);
 }
 
 .ai-tools-other {
@@ -251,7 +257,7 @@ textarea.field__control {
 }
 
 .choice-options--compact {
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 0.4rem;
 }
 
